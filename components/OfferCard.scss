@@ -1,0 +1,567 @@
+@use '../styles/tokens.scss' as *;
+
+.offer-card {
+  background: $color-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  margin: $spacing-lg 0;
+  transition: var(--transition-smooth);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+  animation: slideUp 0.4s ease-out;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $color-primary, var(--primary-light));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: var(--transition-smooth);
+  }
+
+  &:hover {
+    border-color: $color-primary;
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-4px);
+
+    &::before {
+      transform: scaleX(1);
+    }
+  }
+
+  &:active {
+    transform: translateY(-2px);
+  }
+}
+
+  // Header Section
+  .offer-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-lg;
+    padding-bottom: $spacing-md;
+    border-bottom: 1px solid $color-border;
+
+    .offer-title-section {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+
+      .offer-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: oklch(from $color-primary l c h / 0.1);
+        border-radius: $radius-md;
+        color: $color-primary;
+
+        svg {
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      .offer-label {
+        font-size: $text-base;
+        font-weight: 700;
+        color: $color-foreground;
+        margin: 0;
+      }
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: $spacing-xs;
+      padding: $spacing-xs $spacing-md;
+      border-radius: $radius-sm;
+      font-size: $text-xs;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: $transition-fast;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      &.status-accepted {
+        background: oklch(from $color-success l c h / 0.15);
+        color: $color-success;
+        border: 1px solid oklch(from $color-success l c h / 0.3);
+      }
+
+      &.status-rejected {
+        background: oklch(from $color-error l c h / 0.15);
+        color: $color-error;
+        border: 1px solid oklch(from $color-error l c h / 0.3);
+      }
+
+      &.status-pending {
+        background: oklch(from $color-warning l c h / 0.15);
+        color: $color-warning;
+        border: 1px solid oklch(from $color-warning l c h / 0.3);
+      }
+    }
+  }
+
+  // Body Section
+  .offer-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+
+    .offer-detail {
+      label {
+        display: block;
+        font-size: $text-xs;
+        font-weight: 600;
+        color: $color-muted-foreground;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: $spacing-xs;
+      }
+
+      .offer-title {
+        font-size: $text-lg;
+        font-weight: 700;
+        color: $color-foreground;
+        margin: 0;
+        line-height: 1.4;
+      }
+
+      .offer-description {
+        font-size: $text-sm;
+        color: $color-foreground;
+        line-height: 1.6;
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    }
+
+    .offer-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: $spacing-lg;
+
+      .metric-item {
+        background: $color-muted;
+        padding: $spacing-lg;
+        border-radius: $radius-lg;
+        border: 1px solid $color-border;
+        transition: var(--transition-smooth);
+        position: relative;
+        overflow: hidden;
+
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, transparent, rgba(var(--primary) / 0.03));
+          opacity: 0;
+          transition: var(--transition-smooth);
+        }
+
+        &:hover {
+          border-color: $color-primary;
+          box-shadow: var(--shadow-md);
+          transform: translateY(-2px);
+
+          &::after {
+            opacity: 1;
+          }
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+
+        label {
+          display: block;
+          font-size: $text-xs;
+          font-weight: 600;
+          color: $color-muted-foreground;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: $spacing-xs;
+        }
+
+        .metric-value {
+          font-size: $text-xl;
+          font-weight: 800;
+          margin: 0;
+        }
+
+        &.metric-price .metric-value {
+          color: $color-primary;
+        }
+
+        &.metric-timeline .metric-value {
+          color: $color-foreground;
+        }
+      }
+    }
+
+    // Attachments Section
+    .offer-attachments {
+      label {
+        display: block;
+        font-size: $text-xs;
+        font-weight: 600;
+        color: $color-muted-foreground;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: $spacing-md;
+      }
+
+      .attachments-list {
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-sm;
+
+        .attachment-item {
+          display: flex;
+          align-items: center;
+          gap: $spacing-md;
+          padding: $spacing-md;
+          background: $color-muted;
+          border: 1px solid $color-border;
+          border-radius: $radius-md;
+          text-decoration: none;
+          transition: $transition-fast;
+          cursor: pointer;
+
+          &:hover {
+            border-color: $color-primary;
+            background: oklch(from $color-primary l c h / 0.05);
+            transform: translateX(4px);
+            box-shadow: $shadow-sm;
+
+            .attachment-download {
+              color: $color-primary;
+            }
+          }
+
+          .attachment-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: oklch(from $color-primary l c h / 0.1);
+            border-radius: $radius-sm;
+            color: $color-primary;
+            flex-shrink: 0;
+
+            svg {
+              width: 20px;
+              height: 20px;
+            }
+          }
+
+          .attachment-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: $spacing-xs;
+            min-width: 0;
+
+            .attachment-name {
+              font-size: $text-sm;
+              font-weight: 600;
+              color: $color-foreground;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+
+            .attachment-size {
+              font-size: $text-xs;
+              color: $color-muted-foreground;
+            }
+          }
+
+          .attachment-download {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            color: $color-muted-foreground;
+            transition: $transition-fast;
+            flex-shrink: 0;
+
+            svg {
+              width: 18px;
+              height: 18px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Job Created Section
+  .offer-job-created {
+    margin-top: $spacing-lg;
+    padding: $spacing-lg;
+    background: oklch(from $color-success l c h / 0.05);
+    border: 2px solid oklch(from $color-success l c h / 0.2);
+    border-radius: $radius-md;
+
+    .job-created-header {
+      display: flex;
+      align-items: flex-start;
+      gap: $spacing-md;
+
+      svg {
+        width: 20px;
+        height: 20px;
+        color: $color-success;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      h4 {
+        font-size: $text-base;
+        font-weight: 700;
+        color: $color-success;
+        margin: 0 0 $spacing-xs;
+      }
+
+      .job-status {
+        font-size: $text-sm;
+        color: $color-foreground;
+        margin: 0;
+
+        strong {
+          color: $color-primary;
+        }
+      }
+    }
+
+    .payment-required-section {
+      margin-top: $spacing-md;
+      padding-top: $spacing-md;
+      border-top: 1px solid oklch(from $color-success l c h / 0.2);
+
+      .payment-warning {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        padding: $spacing-sm $spacing-md;
+        background: oklch(from $color-warning l c h / 0.1);
+        border: 1px solid $color-warning;
+        border-radius: $radius-sm;
+        margin-bottom: $spacing-md;
+
+        svg {
+          width: 18px;
+          height: 18px;
+          color: $color-warning;
+          flex-shrink: 0;
+        }
+
+        span {
+          font-size: $text-sm;
+          font-weight: 600;
+          color: $color-warning;
+        }
+      }
+
+      .btn-pay-now {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: $spacing-sm;
+        padding: $spacing-md $spacing-lg;
+        background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+        color: $color-primary-foreground;
+        border: none;
+        border-radius: $radius-md;
+        font-size: $text-sm;
+        font-weight: 700;
+        cursor: pointer;
+        transition: $transition-fast;
+        box-shadow: $shadow-md;
+
+        svg {
+          width: 18px;
+          height: 18px;
+        }
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: $shadow-lg;
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+
+  // Action Buttons
+  .offer-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+    margin-top: $spacing-xl;
+    padding-top: $spacing-lg;
+    border-top: 1px solid $color-border;
+
+    .offer-response-helper {
+      flex-basis: 100%;
+      margin: 0;
+      padding: $spacing-sm $spacing-md;
+      border-radius: $radius-sm;
+      font-size: $text-xs;
+      line-height: 1.45;
+      color: $color-muted-foreground;
+      background: oklch(from $color-primary l c h / 0.06);
+      border: 1px solid oklch(from $color-primary l c h / 0.18);
+
+      strong {
+        color: $color-foreground;
+      }
+    }
+
+    .btn-action {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: $spacing-sm;
+      padding: $spacing-md $spacing-lg;
+      border: none;
+      border-radius: $radius-md;
+      font-size: $text-sm;
+      font-weight: 700;
+      cursor: pointer;
+      transition: $transition-fast;
+      box-shadow: $shadow-sm;
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid currentColor;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      &.btn-accept {
+        background: linear-gradient(135deg, $color-success 0%, var(--success-dark) 100%);
+        color: $color-success-foreground;
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2));
+          transform: translateX(-100%);
+          transition: transform 0.6s ease;
+        }
+
+        &:hover:not(:disabled) {
+          transform: translateY(-3px) scale(1.02);
+          box-shadow: var(--shadow-lg);
+
+          &::before {
+            transform: translateX(100%);
+          }
+        }
+
+        &:active:not(:disabled) {
+          transform: translateY(-1px) scale(1.0);
+        }
+      }
+
+      &.btn-reject {
+        background: transparent;
+        color: $color-error;
+        border: 2px solid $color-error;
+        box-shadow: none;
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: oklch(from $color-error l c h / 0.1);
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform 0.3s ease;
+        }
+
+        &:hover:not(:disabled) {
+          background: oklch(from $color-error l c h / 0.05);
+          border-color: var(--error-dark);
+          color: var(--error-dark);
+          transform: translateY(-3px) scale(1.02);
+          box-shadow: var(--shadow-md);
+
+          &::before {
+            transform: scaleX(1);
+          }
+        }
+
+        &:active:not(:disabled) {
+          transform: translateY(-1px) scale(1.0);
+        }
+      }
+    }
+  }
+
+  // @media (max-width: $breakpoint-md) {
+  //   padding: $spacing-lg;
+
+  //   .offer-metrics {
+  //     grid-template-columns: 1fr;
+  //   }
+
+  //   .offer-card-actions {
+  //     flex-direction: column;
+
+  //     .btn-action {
+  //       width: 100%;
+  //     }
+  //   }
+  // }
+// }
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

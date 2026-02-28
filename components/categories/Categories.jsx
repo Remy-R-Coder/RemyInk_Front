@@ -1,0 +1,462 @@
+"use client"
+
+import React, { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import httpClient from "../../api/httpClient";
+import { useAuth, useNotification } from "../../contexts/AppContexts";
+import { useCreateThread } from "../../hooks/useChatHooks";
+import guestSessionService from "../../services/guestSessionService";
+import { MessageCircle, Star, Clock, DollarSign, CheckCircle, Loader, ChevronRight, User } from "lucide-react";
+import "./Categories.scss";
+
+const Categories = () => {
+  const [categories, setCategories] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [freelancers, setFreelancers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [guestLabel, setGuestLabel] = useState(null);
+  const [sessionInitialized, setSessionInitialized] = useState(false);
+
+  const { isAuthenticated } = useAuth();
+  const { showSuccess, showError } = useNotification();
+  const createThreadMutation = useCreateThread();
+  const router = useRouter();
+
+  // Initialize guest session for unauthenticated users
+  useEffect(() => {
+    const initializeGuestSession = async () => {
+      if (!isAuthenticated && !sessionInitialized) {
+        const existingKey = guestSessionService.getSessionKey();
+        const sessionExpired = guestSessionService.isSessionExpired();
+        const existingLabel = guestSessionService.getGuestLabel();
+
+        if (existingKey && !sessionExpired && existingLabel) {
+          setGuestLabel(existingLabel);
+          setSessionInitialized(true);
+          return;
+        }
+
+        try {
+          const { sessionKey, guestLabel } = await guestSessionService.initializeSession();
+          setGuestLabel(guestLabel);
+          setSessionInitialized(true);
+          console.log(`Guest session initialized: ${guestLabel}`);
+        } catch (error) {
+          console.error("Failed to initialize guest session:", error);
+          // Continue without guest session - will be created when needed
+          setSessionInitialized(true);
+        }
+      }
+    };
+
+    initializeGuestSession();
+  }, [isAuthenticated, sessionInitialized]);
+
+  const fetchCategories = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await httpClient.get("/jobs/categories");
+      setCategories(res.data.results || []);
+      setError("");
+    } catch (err) {
+      setError("Failed to fetch categories.");
+      showError("Failed to fetch categories");
+    } finally {
+      setLoading(false);
+    }
+  }, [showError]);
+
+  const fetchSubjects = useCallback(async () => {
+    if (!selectedCategory) {
+      setSubjects([]);
+      setFreelancers([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await httpClient.get(
+        `/jobs/subject-areas/?category_id=${selectedCategory}`
+      );
+      setSubjects(res.data.results || []);
+      setSelectedSubject(null);
+      setError("");
+    } catch (err) {
+      setError("Failed to fetch subjects.");
+      showError("Failed to fetch subjects");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCategory, showError]);
+
+  const fetchFreelancers = useCallback(async () => {
+    if (!selectedSubject) {
+      setFreelancers([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      let res = await httpClient.get(
+        `/users/freelancers/?subject_id=${selectedSubject}`
+      );
+      let results = res.data.results || [];
+
+      if (results.length === 0) {
+        const fallbackRes = await httpClient.get(
+          `/users/freelancers/?subject_id=${selectedSubject}&fallback_admin=true`
+        );
+        results = fallbackRes.data.results || [];
+      }
+
+      setFreelancers(results);
+      setError("");
+    } catch (err) {
+      setError("Failed to fetch experts.");
+      showError("Failed to fetch experts");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedSubject, showError]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    fetchSubjects();
+  }, [fetchSubjects]);
+
+  useEffect(() => {
+    fetchFreelancers();
+  }, [fetchFreelancers]);
+
+  const handleCategoryClick = (id) => {
+    setSelectedCategory(id);
+    setSelectedSubject(null);
+    setFreelancers([]);
+  };
+
+  const handleSubjectClick = (id) => {
+    setSelectedSubject(id);
+  };
+
+  const handleOpenChat = async (freelancer) => {
+    try {
+      // Update guest session activity
+      if (!isAuthenticated) {
+        guestSessionService.updateActivity();
+      }
+
+      // Get session key for guest users
+      const sessionKey = isAuthenticated ? null : guestSessionService.getSessionKey();
+
+      const thread = await createThreadMutation.mutateAsync({
+        freelancerUsername: freelancer.username,
+        sessionKey,
+      });
+
+      showSuccess(`Chat started with ${freelancer.username} ${!isAuthenticated ? `(as ${guestLabel})` : ''}`);
+      router.push(`/threads/${thread.id}`);
+    } catch (err) {
+      if (err.response?.status === 401 && isAuthenticated) {
+        showError("Your session has expired. Please log in again.");
+        router.push("/login");
+      } else if (err.response?.status === 401 && !isAuthenticated) {
+        showError("Unable to start guest chat. Please try again or create an account.");
+      } else {
+        showError("Failed to start chat. Please try again.");
+      }
+      console.error("Chat creation error:", err);
+    }
+  };
+
+  const selectedCategoryObject = categories.find((c) => c.id === selectedCategory);
+  const selectedSubjectObject = subjects.find((s) => s.id === selectedSubject);
+  const pickFirstNumber = (...values) => {
+    const matched = values.find((value) => Number.isFinite(Number(value)));
+    return matched != null ? Number(matched) : null;
+  };
+  const formatAvgPrice = (freelancer) => {
+    const profile = freelancer?.profile || {};
+    const stats = freelancer?.stats || profile?.stats || {};
+    const avgPrice = pickFirstNumber(
+      stats.avg_price,
+      stats.average_price,
+      stats.hourly_rate,
+      profile.avg_price,
+      profile.average_price,
+      profile.hourly_rate,
+      freelancer.avg_price,
+      freelancer.average_price,
+      freelancer.hourly_rate,
+      freelancer.rate
+    );
+    return avgPrice != null ? `KES ${avgPrice.toLocaleString("en-KE")}` : "N/A";
+  };
+  const formatAvgDelivery = (freelancer) => {
+    const profile = freelancer?.profile || {};
+    const stats = freelancer?.stats || profile?.stats || {};
+    const avgDelivery = pickFirstNumber(
+      stats.avg_delivery_time,
+      stats.average_delivery_time,
+      stats.delivery_time_days,
+      profile.avg_delivery_time,
+      profile.average_delivery_time,
+      profile.delivery_time_days,
+      freelancer.avg_delivery_time,
+      freelancer.average_delivery_time,
+      freelancer.delivery_time_days
+    );
+    return avgDelivery != null ? `${avgDelivery} days` : "N/A";
+  };
+  const formatAvgRating = (freelancer) => {
+    const profile = freelancer?.profile || {};
+    const stats = freelancer?.stats || profile?.stats || {};
+    const avgRating = pickFirstNumber(
+      stats.average_rating,
+      stats.avg_rating,
+      stats.rating,
+      profile.average_rating,
+      profile.avg_rating,
+      profile.rating,
+      freelancer.average_rating,
+      freelancer.avg_rating,
+      freelancer.rating
+    );
+    return avgRating != null ? `${avgRating.toFixed(1)} / 5` : "N/A";
+  };
+  const formatCompletedJobs = (freelancer) => {
+    const profile = freelancer?.profile || {};
+    const stats = freelancer?.stats || profile?.stats || {};
+    const completed = pickFirstNumber(
+      stats.completed_jobs,
+      stats.jobs_completed,
+      profile.completed_jobs,
+      profile.jobs_completed,
+      freelancer.completed_jobs,
+      freelancer.jobs_completed
+    );
+    return completed != null ? completed.toLocaleString("en-KE") : "N/A";
+  };
+
+  return (
+    <div className="categories-page">
+      {/* Guest Mode Indicator */}
+      {!isAuthenticated && guestLabel && (
+        <div className="guest-mode-banner">
+          <User size={16} />
+          <span>Browsing as <strong>{guestLabel}</strong></span>
+          <span className="guest-info">Your conversations will be saved and can be linked when you sign up</span>
+        </div>
+      )}
+
+      {/* Hero Section */}
+      <div className="categories-hero">
+        <div className="hero-content">
+          {/* <div className="hero-icon">
+            <Sparkles size={32} />
+          </div> */}
+          <h1 className="hero-title">Find Your Perfect Expert</h1>
+          <p className="hero-subtitle">Connect with top professionals in just three simple steps</p>
+        </div>
+
+        {/* Progress Steps */}
+        <div className="progress-steps">
+          <div className={`progress-step ${selectedCategory ? 'completed' : 'active'}`}>
+            <div className="step-number">
+              {selectedCategory ? <CheckCircle size={20} /> : '1'}
+            </div>
+            <span className="step-label">Select Category</span>
+          </div>
+          <div className="progress-line"></div>
+          <div className={`progress-step ${selectedSubject ? 'completed' : selectedCategory ? 'active' : ''}`}>
+            <div className="step-number">
+              {selectedSubject ? <CheckCircle size={20} /> : '2'}
+            </div>
+            <span className="step-label">Choose Subject</span>
+          </div>
+          <div className="progress-line"></div>
+          <div className={`progress-step ${selectedSubject && freelancers.length > 0 ? 'active' : ''}`}>
+            <div className="step-number">3</div>
+            <span className="step-label">Connect</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Loading Overlay */}
+      {(loading || createThreadMutation.isPending) && (
+        <div className="loading-overlay">
+          <div className="loading-spinner">
+            <Loader className="spinner-icon" size={40} />
+            <p>{createThreadMutation.isPending ? 'Starting chat...' : 'Loading...'}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="error-banner">
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Step 1: Categories */}
+      <section className="categories-section">
+        <div className="section-header">
+          <h2 className="section-title">
+            <span className="step-badge">Step 1</span>
+            Select Your Category
+          </h2>
+          <p className="section-description">Choose the main area you need help with</p>
+        </div>
+
+        <div className="categories-grid">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              className={`category-card ${selectedCategory === category.id ? 'active' : ''}`}
+              onClick={() => handleCategoryClick(category.id)}
+            >
+              <div className="category-card-content">
+                <h3 className="category-name">{category.name}</h3>
+                {selectedCategory === category.id && (
+                  <div className="category-check">
+                    <CheckCircle size={20} />
+                  </div>
+                )}
+              </div>
+              <ChevronRight className="category-arrow" size={20} />
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Step 2: Subjects */}
+      {selectedCategory && (
+        <section className="subjects-section">
+          <div className="section-header">
+            <h2 className="section-title">
+              <span className="step-badge">Step 2</span>
+              Choose Your Subject
+            </h2>
+            <p className="section-description">Pick a specific subject area within {selectedCategoryObject?.name}</p>
+          </div>
+
+          {subjects.length > 0 ? (
+            <div className="subjects-chips">
+              {subjects.map((subject) => (
+                <button
+                  key={subject.id}
+                  className={`subject-chip ${selectedSubject === subject.id ? 'active' : ''}`}
+                  onClick={() => handleSubjectClick(subject.id)}
+                >
+                  {subject.name}
+                  {selectedSubject === subject.id && (
+                    <CheckCircle size={16} className="chip-check" />
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <MessageCircle size={48} />
+              <p>No subjects found in this category</p>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Step 3: Freelancers */}
+      {selectedSubject && (
+        <section className="freelancers-section">
+          <div className="section-header">
+            <h2 className="section-title">
+              <span className="step-badge">Step 3</span>
+              Connect With Experts
+            </h2>
+            <p className="section-description">Start a conversation with your chosen expert</p>
+          </div>
+
+          {freelancers.length > 0 ? (
+            <div className="freelancers-grid">
+              {freelancers.map((freelancer) => (
+                <div key={freelancer.id} className="freelancer-card">
+                  <div className="freelancer-card-header">
+                    <div className="freelancer-avatar">
+                      <span>{freelancer.username.charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div className="freelancer-info">
+                      <h3 className="freelancer-name">{freelancer.username}</h3>
+                      {freelancer.is_superuser && (
+                        <span className="admin-badge">
+                          <Star size={12} />
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="freelancer-stats">
+                    <div className="stat-item">
+                      <DollarSign size={16} className="stat-icon" />
+                      <div className="stat-content">
+                        <span className="stat-label">Avg Price</span>
+                        <span className="stat-value">{formatAvgPrice(freelancer)}</span>
+                      </div>
+                    </div>
+                    <div className="stat-item">
+                      <Clock size={16} className="stat-icon" />
+                      <div className="stat-content">
+                        <span className="stat-label">Delivery</span>
+                        <span className="stat-value">{formatAvgDelivery(freelancer)}</span>
+                      </div>
+                    </div>
+                    <div className="stat-item">
+                      <Star size={16} className="stat-icon" />
+                      <div className="stat-content">
+                        <span className="stat-label">Avg Rating</span>
+                        <span className="stat-value">{formatAvgRating(freelancer)}</span>
+                      </div>
+                    </div>
+                    <div className="stat-item">
+                      <CheckCircle size={16} className="stat-icon" />
+                      <div className="stat-content">
+                        <span className="stat-label">Completed</span>
+                        <span className="stat-value">{formatCompletedJobs(freelancer)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="freelancer-tags">
+                    <span className="tag">{selectedCategoryObject?.name}</span>
+                    <span className="tag">{selectedSubjectObject?.name}</span>
+                  </div>
+
+                  <button
+                    className="chat-button"
+                    onClick={() => handleOpenChat(freelancer)}
+                    disabled={createThreadMutation.isPending}
+                  >
+                    <MessageCircle size={18} />
+                    Start Chat
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <MessageCircle size={48} />
+              <p>No experts available for this subject</p>
+              <span>Try selecting a different subject area</span>
+            </div>
+          )}
+        </section>
+      )}
+    </div>
+  );
+};
+
+export default Categories;
