@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import httpClient from "../../api/httpClient";
 import { useAuth, useNotification } from "../../contexts/AppContexts";
@@ -20,6 +20,7 @@ const Categories = () => {
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [guestLabel, setGuestLabel] = useState(null);
   const [sessionInitialized, setSessionInitialized] = useState(false);
+  const subjectsRequestRef = useRef(0);
 
   const { isAuthenticated } = useAuth();
   const { showSuccess, showError } = useNotification();
@@ -76,19 +77,25 @@ const Categories = () => {
       setFreelancers([]);
       return;
     }
+    const requestId = ++subjectsRequestRef.current;
     setLoading(true);
     try {
       const res = await httpClient.get(
         `/jobs/subject-areas/?category_id=${selectedCategory}`
       );
+      // Ignore stale responses if user switched categories quickly.
+      if (requestId !== subjectsRequestRef.current) return;
       setSubjects(res.data.results || []);
       setSelectedSubject(null);
       setError("");
     } catch (err) {
+      if (requestId !== subjectsRequestRef.current) return;
       setError("Failed to fetch subjects.");
       showError("Failed to fetch subjects");
     } finally {
-      setLoading(false);
+      if (requestId === subjectsRequestRef.current) {
+        setLoading(false);
+      }
     }
   }, [selectedCategory, showError]);
 
@@ -134,7 +141,9 @@ const Categories = () => {
   }, [fetchFreelancers]);
 
   const handleCategoryClick = (id) => {
-    setSelectedCategory(id);
+    const isCurrentlySelected = selectedCategory === id;
+    setSelectedCategory(isCurrentlySelected ? null : id);
+    setSubjects([]);
     setSelectedSubject(null);
     setFreelancers([]);
   };
@@ -174,6 +183,9 @@ const Categories = () => {
   };
 
   const selectedCategoryObject = categories.find((c) => c.id === selectedCategory);
+  const visibleCategories = selectedCategory
+    ? categories.filter((category) => category.id === selectedCategory)
+    : categories;
   const selectedSubjectObject = subjects.find((s) => s.id === selectedSubject);
   const pickFirstNumber = (...values) => {
     const matched = values.find((value) => Number.isFinite(Number(value)));
@@ -314,7 +326,7 @@ const Categories = () => {
         </div>
 
         <div className="categories-grid">
-          {categories.map((category) => (
+          {visibleCategories.map((category) => (
             <button
               key={category.id}
               className={`category-card ${selectedCategory === category.id ? 'active' : ''}`}

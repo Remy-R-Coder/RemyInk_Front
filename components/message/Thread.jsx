@@ -825,27 +825,6 @@ export default function Thread() {
 
   const isUploading = uploadMutation.isPending || pendingAttachments.some(a => a.status === 'pending');
   const isSending = sendMutation.isPending;
-  const variantSeed = Number.isFinite(Number(id))
-    ? Number(id)
-    : String(id || "")
-        .split("")
-        .reduce((sum, ch) => sum + ch.charCodeAt(0), 0)
-  const isVariantB = variantSeed % 2 === 0
-  const conversionCopy = isVariantB
-    ? {
-        title: "Keep your project chat and files in one place",
-        text: "Sign up in 30 seconds to save this thread, offers, and attachments for future follow-up.",
-        secondaryCta: "Sign In",
-        primaryCta: "Save Chat Free",
-        variant: "B",
-      }
-    : {
-        title: "Save this conversation permanently",
-        text: "Create your free account to keep chat history, files, and project offers in one place.",
-        secondaryCta: "Log In",
-        primaryCta: "Create Free Account",
-        variant: "A",
-      }
 
   return (
     <div className="thread-shell">
@@ -1025,27 +1004,6 @@ export default function Thread() {
             <a href={`/job/${relatedJobId}`} className="thread-job-link">
               Open Full Job Page
             </a>
-          </div>
-        </div>
-      )}
-
-      {/* Guest user sign-up prompt */}
-      {isGuestViewer && guestLabel && (
-        <div className="thread-conversion-banner" data-variant={conversionCopy.variant}>
-          <div className="thread-conversion-banner__content">
-            <div className="thread-conversion-banner__icon">
-              <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <p className="thread-conversion-banner__title">{conversionCopy.title}</p>
-              <p className="thread-conversion-banner__text">{conversionCopy.text}</p>
-            </div>
-          </div>
-          <div className="thread-conversion-banner__actions">
-            <a href="/login" className="thread-conversion-banner__link">{conversionCopy.secondaryCta}</a>
-            <a href="/register" className="thread-conversion-banner__cta">{conversionCopy.primaryCta}</a>
           </div>
         </div>
       )}
