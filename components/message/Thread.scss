@@ -18,6 +18,7 @@
   max-width: min(1320px, 96vw);
   min-height: clamp(520px, 64vh, 760px);
   height: clamp(520px, 72vh, 820px);
+  min-width: 0;
   margin: 0;
   background: linear-gradient(
     180deg,
@@ -61,6 +62,7 @@
 
 .thread-modern__messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: clamp(12px, 1.4vw, 20px) clamp(12px, 1.4vw, 20px);
   background:
@@ -382,6 +384,15 @@
   border-color: #b91c1c;
 }
 
+.thread-offer-form-panel {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  background: oklch(from #fef2f2 l c h / 0.5);
+  max-height: min(52vh, 520px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .thread-modern__composer {
   display: flex;
   align-items: center;
@@ -490,6 +501,7 @@
 
   .thread-modern__header,
   .thread-job-panel,
+  .thread-offer-form-panel,
   .thread-modern__messages,
   .thread-modern__attachments,
   .thread-modern__composer {

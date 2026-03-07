@@ -81,13 +81,37 @@ const AttachmentDisplay = ({ attachments }) => {
   )
 }
 
-const MessageBubble = ({ m, onAcceptOffer, onRejectOffer, currentUser }) => {
+const MessageBubble = ({
+  m,
+  onAcceptOffer,
+  onRejectOffer,
+  currentUser,
+  isAuthenticated,
+  sessionKey,
+  guestLabel,
+}) => {
+  const normalizedSessionKey = String(sessionKey || "").trim()
+  const normalizedGuestLabel = String(guestLabel || "").trim().toLowerCase()
+  const senderGuestCandidates = [
+    m?.sender_guest_key,
+    m?.guest_session_key,
+    m?.sender_session_key,
+    m?.session_key,
+    m?.sender?.guest_session_key,
+    m?.sender?.session_key,
+  ].map((value) => String(value || "").trim()).filter(Boolean)
+  const senderNameNormalized = String(m?.sender_name || "").trim().toLowerCase()
+  const senderUsernameNormalized = String(m?.sender_username || "").trim().toLowerCase()
+  const currentUsername = String(currentUser?.username || "").trim().toLowerCase()
+
   const isMine = typeof m.is_mine === "boolean"
     ? m.is_mine
-    : !!(
-        (currentUser?.username && m.sender_username === currentUser.username) ||
-        (currentUser?.username && m.sender_name === currentUser.username)
-      )
+    : isAuthenticated
+      ? !!(currentUsername && (senderUsernameNormalized === currentUsername || senderNameNormalized === currentUsername))
+      : !!(
+          (normalizedSessionKey && senderGuestCandidates.includes(normalizedSessionKey)) ||
+          (normalizedGuestLabel && senderNameNormalized === normalizedGuestLabel)
+        )
   const bubbleClasses = isMine ? "chat-bubble chat-bubble--mine" : "chat-bubble chat-bubble--theirs"
   const containerClasses = isMine ? "thread-message-row thread-message-row--mine" : "thread-message-row thread-message-row--theirs"
   const contentClasses = isMine ? "thread-message-content thread-message-content--mine" : "thread-message-content thread-message-content--theirs"
@@ -1019,7 +1043,7 @@ export default function Thread() {
       )}
 
       {showOfferForm && (
-        <div className="p-6 border-b border-gray-100 bg-red-50/50">
+        <div className="thread-offer-form-panel">
           <OfferForm
             onSend={handleSendOffer}
             onCancel={() => setShowOfferForm(false)}
@@ -1037,6 +1061,9 @@ export default function Thread() {
             onAcceptOffer={handleAcceptOffer}
             onRejectOffer={handleRejectOffer}
             currentUser={currentUser}
+            isAuthenticated={isAuthenticated}
+            sessionKey={sessionKey}
+            guestLabel={guestLabel}
           />
         ))}
         <div ref={bottomRef} />
