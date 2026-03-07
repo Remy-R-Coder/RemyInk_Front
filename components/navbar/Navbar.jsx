@@ -48,10 +48,19 @@ const Navbar = () => {
         setUser(null);
       }
     } catch (error) {
-      console.error("Failed to fetch user profile:", error);
+      const isNetworkError =
+        error instanceof TypeError ||
+        /failed to fetch|networkerror|load failed/i.test(String(error?.message || ""));
+      if (!isNetworkError && process.env.NODE_ENV === "development") {
+        console.error("Failed to fetch user profile:", error);
+      }
       const cachedUser = localStorage.getItem("currentUser");
       if (cachedUser) {
-        setUser(JSON.parse(cachedUser));
+        try {
+          setUser(JSON.parse(cachedUser));
+        } catch {
+          setUser(null);
+        }
       }
     } finally {
       setLoading(false);
@@ -106,7 +115,13 @@ const Navbar = () => {
         );
         return;
       } catch (error) {
-        console.error("Failed to fetch notifications:", error);
+        const isNetworkError =
+          error instanceof TypeError ||
+          /failed to fetch|networkerror|load failed/i.test(String(error?.message || ""));
+        if (!isNetworkError && process.env.NODE_ENV === "development") {
+          console.error("Failed to fetch notifications:", error);
+        }
+        setUnreadNotifications(0);
         return;
       }
     }

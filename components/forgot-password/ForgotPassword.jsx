@@ -2,13 +2,10 @@
 
 import React, { useMemo, useState } from "react"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
 import { requestPasswordSetupEmail } from "../../utils/clientOnboarding"
 import "./ForgotPassword.scss"
 
-export default function ForgotPassword() {
-  const searchParams = useSearchParams()
-  const initialEmail = searchParams.get("email") || ""
+export default function ForgotPassword({ initialEmail = "" }) {
   const [email, setEmail] = useState(initialEmail)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")

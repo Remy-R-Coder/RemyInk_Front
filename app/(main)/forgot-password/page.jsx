@@ -1,5 +1,3 @@
-"use client"
-
 import ForgotPassword from "@/components/forgot-password/ForgotPassword"
 
 /**
@@ -7,6 +5,10 @@ import ForgotPassword from "@/components/forgot-password/ForgotPassword"
  * Sends setup/reset email to account owner.
  * @returns {JSX.Element}
  */
-export default function ForgotPasswordPage() {
-  return <ForgotPassword />
+export default async function ForgotPasswordPage({ searchParams }) {
+  const resolvedSearchParams = await searchParams
+  const initialEmail =
+    typeof resolvedSearchParams?.email === "string" ? resolvedSearchParams.email : ""
+
+  return <ForgotPassword initialEmail={initialEmail} />
 }
