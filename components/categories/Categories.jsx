@@ -167,7 +167,7 @@ const Categories = () => {
         sessionKey,
       });
 
-      showSuccess(`Chat started with ${freelancer.username} ${!isAuthenticated ? `(as ${guestLabel})` : ''}`);
+      showSuccess(`Chat started with ${freelancer.username}`);
       router.push(`/threads/${thread.id}`);
     } catch (err) {
       if (err.response?.status === 401 && isAuthenticated) {
@@ -260,7 +260,7 @@ const Categories = () => {
       {!isAuthenticated && guestLabel && (
         <div className="guest-mode-banner">
           <User size={16} />
-          <span>Browsing as <strong>{guestLabel}</strong></span>
+          <span>Guest browsing enabled</span>
           <span className="guest-info">Your conversations will be saved and can be linked when you sign up</span>
         </div>
       )}

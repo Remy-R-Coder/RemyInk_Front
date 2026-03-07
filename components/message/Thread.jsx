@@ -11,7 +11,6 @@ import OfferCard from "../../components/OfferCard"
 import JobSubmissionForm from "../../components/JobSubmissionForm"
 import "./Thread.scss"
 import OfferForm from "../../components/OfferForm"
-import { User } from "lucide-react" 
 import { savePendingClientEmailForJob } from "../../utils/clientOnboarding"
 
 const MAX_PENDING_ATTACHMENTS = 5;
@@ -917,12 +916,6 @@ export default function Thread() {
             <h2 className="font-semibold text-lg text-slate-900">
               {participantName ? `Chat with ${participantName}` : "Chat Conversation"}
             </h2>
-            {isGuestViewer && guestLabel ? (
-              <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                <User size={14} />
-                <span>Chatting as <strong className="font-semibold">{guestLabel}</strong></span>
-              </div>
-            ) : null}
           </div>
         </div>
       </div>
