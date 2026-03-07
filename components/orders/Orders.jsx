@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState, useCallback, useMemo } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import httpClient from "../../api/httpClient"
 import moment from "moment"
 import { triggerClientOnboardingAfterPayment } from "../../utils/clientOnboarding"
@@ -35,9 +35,18 @@ const persistConfirmedPaidJobIds = (ids) => {
   localStorage.setItem(CONFIRMED_PAID_JOBS_KEY, JSON.stringify(Array.from(ids)))
 }
 
-const Orders = () => {
+const getSearchParamValue = (searchParams, key) => {
+  const value = searchParams?.[key]
+  if (Array.isArray(value)) return value[0] || ""
+  return typeof value === "string" ? value : ""
+}
+
+const Orders = ({ initialSearchParams = {} }) => {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const paymentReference =
+    getSearchParamValue(initialSearchParams, "reference") ||
+    getSearchParamValue(initialSearchParams, "trxref")
+  const paymentStatus = getSearchParamValue(initialSearchParams, "status").toLowerCase()
   const currentUser = useMemo(() => {
     if (typeof window === "undefined") return null
     try {
@@ -153,8 +162,8 @@ const Orders = () => {
   }
 
   const reconcilePaymentAfterRedirect = useCallback(async () => {
-    const reference = searchParams.get("reference") || searchParams.get("trxref")
-    const status = (searchParams.get("status") || "").toLowerCase()
+    const reference = paymentReference
+    const status = paymentStatus
     const trackedJobId = localStorage.getItem(PAYMENT_TRACKING_KEY)
 
     if (!reference && !trackedJobId && !status) return
@@ -224,7 +233,7 @@ const Orders = () => {
     if (status === "success" || status === "successful" || reference) {
       setPaymentNotice({ type: "info", message: "Payment received. Order status update may take a moment." })
     }
-  }, [searchParams])
+  }, [paymentReference, paymentStatus, currentUser?.email])
 
   useEffect(() => {
     reconcilePaymentAfterRedirect()

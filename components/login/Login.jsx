@@ -1,14 +1,20 @@
 "use client"
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Link from "next/link";
 import { setAuthSessionCookie } from "../../utils/cookies";
 import { buildApiUrl } from "../../utils/apiUrl";
 import { requestPasswordSetupEmail } from "../../utils/clientOnboarding";
 import "./Login.scss";
 
-const Login = ({ onLoginSuccess }) => {
+const getSearchParamValue = (searchParams, key) => {
+  const value = searchParams?.[key]
+  if (Array.isArray(value)) return value[0] || ""
+  return typeof value === "string" ? value : ""
+}
+
+const Login = ({ onLoginSuccess, initialSearchParams = {} }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -24,7 +30,13 @@ const Login = ({ onLoginSuccess }) => {
   const [resendMessage, setResendMessage] = useState("");
 
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const emailFromQuery = getSearchParamValue(initialSearchParams, "email");
+  const roleFromQuery = getSearchParamValue(initialSearchParams, "role").toUpperCase();
+  const uidFromQuery =
+    getSearchParamValue(initialSearchParams, "uid") ||
+    getSearchParamValue(initialSearchParams, "uidb64");
+  const tokenFromQuery = getSearchParamValue(initialSearchParams, "token");
+  const redirectParam = getSearchParamValue(initialSearchParams, "redirect");
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail");
@@ -35,30 +47,26 @@ const Login = ({ onLoginSuccess }) => {
   }, []);
 
   useEffect(() => {
-    const emailFromQuery = searchParams.get("email");
     if (emailFromQuery) {
       setFormData((prev) => ({ ...prev, email: emailFromQuery }));
     }
-    const roleFromQuery = (searchParams.get("role") || "").toUpperCase()
     if (roleFromQuery === "CLIENT" || roleFromQuery === "FREELANCER") {
       setRole(roleFromQuery)
     }
-  }, [searchParams]);
+  }, [emailFromQuery, roleFromQuery]);
 
   useEffect(() => {
-    const uid = searchParams.get("uid") || searchParams.get("uidb64");
-    const token = searchParams.get("token");
-    if (!uid || !token) return;
+    if (!uidFromQuery || !tokenFromQuery) return;
 
     const params = new URLSearchParams();
-    params.set("uid", uid);
-    params.set("token", token);
-    const email = searchParams.get("email");
+    params.set("uid", uidFromQuery);
+    params.set("token", tokenFromQuery);
+    const email = emailFromQuery;
     if (email) {
       params.set("email", email);
     }
     router.replace(`/password/setup?${params.toString()}`);
-  }, [router, searchParams]);
+  }, [router, uidFromQuery, tokenFromQuery, emailFromQuery]);
 
   useEffect(() => {
     if (error && !requiresPasswordSetup) {
@@ -190,7 +198,6 @@ const Login = ({ onLoginSuccess }) => {
       if (onLoginSuccess) onLoginSuccess(user);
 
       // Get redirect from query parameter or default based on role
-      const redirectParam = searchParams.get('redirect');
       const defaultRedirect = user.role === "ADMIN" ? "/admin" : "/dashboard";
       const redirectTo = redirectParam || defaultRedirect;
 

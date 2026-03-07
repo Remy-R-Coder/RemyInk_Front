@@ -2,17 +2,24 @@
 
 import React, { useMemo, useState } from "react"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import httpClient from "../../api/httpClient"
 import { requestPasswordSetupEmail } from "../../utils/clientOnboarding"
 import "./PasswordSetup.scss"
 
-export default function PasswordSetup() {
+const getSearchParamValue = (searchParams, key) => {
+  const value = searchParams?.[key]
+  if (Array.isArray(value)) return value[0] || ""
+  return typeof value === "string" ? value : ""
+}
+
+export default function PasswordSetup({ initialSearchParams = {} }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const uid = searchParams.get("uid") || searchParams.get("uidb64") || ""
-  const token = searchParams.get("token") || ""
-  const emailHint = searchParams.get("email") || ""
+  const uid =
+    getSearchParamValue(initialSearchParams, "uid") ||
+    getSearchParamValue(initialSearchParams, "uidb64")
+  const token = getSearchParamValue(initialSearchParams, "token")
+  const emailHint = getSearchParamValue(initialSearchParams, "email")
 
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
