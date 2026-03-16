@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"
 import Link from "next/link";
 import { setAuthSessionCookie } from "../../utils/cookies";
-import { buildApiUrl } from "../../utils/apiUrl";
 import { requestPasswordSetupEmail } from "../../utils/clientOnboarding";
 import "./Login.scss";
 import { httpClient } from "../../api/httpClient"; // Adjust path if necessary
