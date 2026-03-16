@@ -76,13 +76,6 @@ const Login = ({ onLoginSuccess, initialSearchParams = {} }) => {
     }
   }, [error, requiresPasswordSetup]);
 
-  const getLoginEndpoint = (selectedRole) => {
-    if (selectedRole === "CLIENT") {
-      return buildApiUrl("/api/users/token/client/")
-    }
-    return buildApiUrl("/api/users/token/freelancer/")
-  };
-
   const validateForm = () => {
     const errors = {};
 
@@ -133,6 +126,7 @@ const Login = ({ onLoginSuccess, initialSearchParams = {} }) => {
     }
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -144,33 +138,17 @@ const Login = ({ onLoginSuccess, initialSearchParams = {} }) => {
     setLoading(true);
 
     try {
-      const loginEndpoint = getLoginEndpoint(role);
+      // 1. We use relative paths. httpClient already knows the DigitalOcean base URL.
+      const endpoint = role === "CLIENT" ? "/users/token/client/" : "/users/token/freelancer/";
 
-      const response = await fetch(loginEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+      // 2. USE httpClient.post INSTEAD OF fetch
+      const response = await httpClient.post(endpoint, {
+        email: formData.email,
+        password: formData.password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        const backendMessage = data.detail || data.error || "Invalid credentials. Please try again."
-        if (
-          /no active account found with the given credentials/i.test(backendMessage) &&
-          role === "CLIENT"
-        ) {
-          throw new Error(
-            "No active client account found with these credentials yet. If this account was created after payment, use the setup link sent to your email."
-          )
-        }
-        throw new Error(backendMessage);
-      }
-
-      const { access, refresh } = data;
+      // Axios puts the response data inside a .data object
+      const { access, refresh } = response.data;
 
       localStorage.setItem("accessToken", access);
       localStorage.setItem("refreshToken", refresh);
@@ -181,63 +159,42 @@ const Login = ({ onLoginSuccess, initialSearchParams = {} }) => {
         localStorage.removeItem("rememberedEmail");
       }
 
-      const profileResponse = await fetch(buildApiUrl("/api/users/me/"), {
-        headers: { Authorization: `Bearer ${access}` },
-      });
+      // 3. FETCH PROFILE using httpClient.get
+      // This is much cleaner and automatically includes your auth headers if set up
+      const profileResponse = await httpClient.get("/users/me/");
+      const user = profileResponse.data;
 
-      if (!profileResponse.ok) {
-        throw new Error("Login succeeded but failed to fetch profile.");
-      }
-
-      const user = await profileResponse.json();
       localStorage.setItem("currentUser", JSON.stringify(user));
       window.dispatchEvent(new Event("auth:changed"));
 
-      // Set lightweight auth cookie for middleware route protection
       setAuthSessionCookie(7);
 
       if (onLoginSuccess) onLoginSuccess(user);
 
-      // Get redirect from query parameter or default based on role
       const defaultRedirect = user.role === "ADMIN" ? "/admin" : "/dashboard";
       const redirectTo = redirectParam || defaultRedirect;
 
       router.push(redirectTo, { replace: true });
     } catch (err) {
-      const rawMessage = err.message || "Login failed. Please check your credentials.";
-      const isNoActiveAccountError =
-        /no active client account found|no active account found with the given credentials/i.test(rawMessage)
-      const isExpectedAuthError =
-        /invalid credentials|password setup required|no active account found/i.test(rawMessage)
-      if (!isExpectedAuthError) {
-        console.error("Login error:", err);
-      }
+      // Axios error handling: the message is usually in err.response.data
+      const errorData = err.response?.data;
+      const rawMessage = errorData?.detail || errorData?.error || err.message || "Login failed.";
+      
+      console.error("Login error details:", rawMessage);
 
-      if (isNoActiveAccountError && role === "CLIENT" && formData.email) {
+      if (role === "CLIENT" && /no active account found/i.test(rawMessage)) {
         try {
-          const response = await requestPasswordSetupEmail(formData.email)
-          setResendMessage(
-            response?.data?.detail || response?.data?.message || "Setup link sent. Check your email."
-          )
-          setError(
-            "No active client account found yet. We have sent your setup link now. Check your email to finish setup."
-          )
+          await requestPasswordSetupEmail(formData.email);
+          setResendMessage("Setup link sent. Check your email.");
         } catch (sendErr) {
-          setError(
-            sendErr?.response?.data?.detail ||
-              sendErr?.response?.data?.error ||
-              "No active client account found yet, and we could not send the setup link automatically. Use 'Resend setup link'."
-          )
+          setError("Account found but could not send setup link.");
         }
-        setRequiresPasswordSetup(true)
-        return
+        setRequiresPasswordSetup(true);
+        return;
       }
 
-      const message = rawMessage;
-      setError(message);
-      setRequiresPasswordSetup(
-        /password setup required|no active client account found|no active account found with the given credentials/i.test(message)
-      );
+      setError(rawMessage);
+      setRequiresPasswordSetup(/password setup required|no active/i.test(rawMessage));
     } finally {
       setLoading(false);
     }
