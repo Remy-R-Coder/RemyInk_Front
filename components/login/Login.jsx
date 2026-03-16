@@ -7,6 +7,7 @@ import { setAuthSessionCookie } from "../../utils/cookies";
 import { buildApiUrl } from "../../utils/apiUrl";
 import { requestPasswordSetupEmail } from "../../utils/clientOnboarding";
 import "./Login.scss";
+import { httpClient } from "../../api/httpClient"; // Adjust path if necessary
 
 const getSearchParamValue = (searchParams, key) => {
   const value = searchParams?.[key]
