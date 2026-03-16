@@ -9,7 +9,7 @@ import axios from "axios";
 import { deleteCookie, clearAuthSessionCookie } from "../utils/cookies";
 
 /** @type {string} Base URL for all API requests */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://remyink-9gqjd.ondigitalocean.app";
 
 /**
  * Retrieves the current authentication token from localStorage
