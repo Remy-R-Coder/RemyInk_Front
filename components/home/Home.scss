@@ -31,13 +31,14 @@
       margin: 0 auto;
       
       .badge {
+        display: inline-block; // Add this to ensure margins are respected correctly
         padding: $spacing-md $spacing-lg;
         background: color-mix(in oklch, $color-primary 10%, transparent);
         color: $color-primary;
         border-radius: 999px;
         font-size: $text-sm;
         font-weight: 700;
-        margin-bottom: $spacing-lg;
+        margin-bottom: $spacing-xl;
         letter-spacing: 0.05em;
         text-transform: uppercase;
         border: 1px solid color-mix(in oklch, $color-primary 20%, transparent);
@@ -47,7 +48,8 @@
         font-size: $text-5xl;
         font-weight: 900;
         line-height: 1.1;
-        margin: 0 0 $spacing-md;
+        margin-top: $spacing-md; // Add a small top margin here if the badge margin isn't enough
+        margin-bottom: $spacing-md;
         color: $color-foreground;
         letter-spacing: -0.05em;
 
