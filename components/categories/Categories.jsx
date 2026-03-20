@@ -1,11 +1,11 @@
 "use client"
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
+import { ensureGuestAuth } from "@/utils/auth";
 import { useRouter } from "next/navigation";
 import httpClient from "../../api/httpClient";
 import { useAuth, useNotification } from "../../contexts/AppContexts";
 import { useCreateThread } from "../../hooks/useChatHooks";
-import guestSessionService from "../../services/guestSessionService";
 import { MessageCircle, Star, Clock, DollarSign, CheckCircle, Loader, ChevronRight, User } from "lucide-react";
 import "./Categories.scss";
 
@@ -18,44 +18,12 @@ const Categories = () => {
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
-  const [guestLabel, setGuestLabel] = useState(null);
-  const [sessionInitialized, setSessionInitialized] = useState(false);
   const subjectsRequestRef = useRef(0);
 
   const { isAuthenticated } = useAuth();
   const { showSuccess, showError } = useNotification();
   const createThreadMutation = useCreateThread();
   const router = useRouter();
-
-  // Initialize guest session for unauthenticated users
-  useEffect(() => {
-    const initializeGuestSession = async () => {
-      if (!isAuthenticated && !sessionInitialized) {
-        const existingKey = guestSessionService.getSessionKey();
-        const sessionExpired = guestSessionService.isSessionExpired();
-        const existingLabel = guestSessionService.getGuestLabel();
-
-        if (existingKey && !sessionExpired && existingLabel) {
-          setGuestLabel(existingLabel);
-          setSessionInitialized(true);
-          return;
-        }
-
-        try {
-          const { sessionKey, guestLabel } = await guestSessionService.initializeSession();
-          setGuestLabel(guestLabel);
-          setSessionInitialized(true);
-          console.log(`Guest session initialized: ${guestLabel}`);
-        } catch (error) {
-          console.error("Failed to initialize guest session:", error);
-          // Continue without guest session - will be created when needed
-          setSessionInitialized(true);
-        }
-      }
-    };
-
-    initializeGuestSession();
-  }, [isAuthenticated, sessionInitialized]);
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
@@ -151,34 +119,34 @@ const Categories = () => {
   const handleSubjectClick = (id) => {
     setSelectedSubject(id);
   };
-
+  
   const handleOpenChat = async (freelancer) => {
     try {
-      // Update guest session activity
+      // Step A: Ensure authentication (guest or real)
       if (!isAuthenticated) {
-        guestSessionService.updateActivity();
+        const ok = await ensureGuestAuth(); // This hits POST /api/users/token/guest/
+  
+        if (!ok) {
+          showError("Unable to start guest session.");
+          return;
+        }
       }
-
-      // Get session key for guest users
-      const sessionKey = isAuthenticated ? null : guestSessionService.getSessionKey();
-
+  
+      // Step B: create thread normally
       const thread = await createThreadMutation.mutateAsync({
         freelancerUsername: freelancer.username,
-        sessionKey,
       });
-
+  
       showSuccess(`Chat started with ${freelancer.username}`);
       router.push(`/threads/${thread.id}`);
     } catch (err) {
-      if (err.response?.status === 401 && isAuthenticated) {
-        showError("Your session has expired. Please log in again.");
-        router.push("/login");
-      } else if (err.response?.status === 401 && !isAuthenticated) {
-        showError("Unable to start guest chat. Please try again or create an account.");
-      } else {
-        showError("Failed to start chat. Please try again.");
-      }
       console.error("Chat creation error:", err);
+  
+      if (err.response?.status === 401) {
+        showError("Session expired. Please try again.");
+      } else {
+        showError("Failed to start chat.");
+      }
     }
   };
 
@@ -256,14 +224,6 @@ const Categories = () => {
 
   return (
     <div className="categories-page">
-      {/* Guest Mode Indicator */}
-      {!isAuthenticated && guestLabel && (
-        <div className="guest-mode-banner">
-          <User size={16} />
-          <span>Guest browsing enabled</span>
-          <span className="guest-info">Your conversations will be saved and can be linked when you sign up</span>
-        </div>
-      )}
 
       {/* Hero Section */}
       <div className="categories-hero">
