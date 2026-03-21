@@ -219,14 +219,18 @@ const chatApi = {
   },
 
   getWebSocketUrl: (threadId, sessionKey = null) => {
-    const wsHost = import.meta.env.VITE_WS_HOST || "127.0.0.1:8000";
+    const wsHost =
+      process.env.NEXT_PUBLIC_WS_HOST ||
+      "remyink-9gqjd.ondigitalocean.app";
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const sessionParam = sessionKey ? `?session_key=${sessionKey}` : "";
     return `${protocol}//${wsHost}/ws/chat/thread/${threadId}/${sessionParam}`;
   },
 
   getNewThreadWebSocketUrl: (freelancerId, sessionKey = null) => {
-    const wsHost = import.meta.env.VITE_WS_HOST || "127.0.0.1:8000";
+    const wsHost =
+      process.env.NEXT_PUBLIC_WS_HOST ||
+      "remyink-9gqjd.ondigitalocean.app";
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const sessionParam = sessionKey ? `?session_key=${sessionKey}` : "";
     return `${protocol}//${wsHost}/ws/chat/new/${freelancerId}/${sessionParam}`;
