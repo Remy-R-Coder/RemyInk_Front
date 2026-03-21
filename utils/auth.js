@@ -1,12 +1,14 @@
 export const ensureGuestAuth = async () => {
   const access = localStorage.getItem("access");
 
-  // already authenticated
   if (access) return true;
+
+  // Use the environment variable, falling back to your DigitalOcean URL
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://remyink-9gqjd.ondigitalocean.app";
 
   try {
     const res = await fetch(
-      "http://127.0.0.1:8000/api/users/token/guest/",
+      `${baseUrl}/api/users/token/guest/`, // Dynamic URL!
       {
         method: "POST",
         headers: {
