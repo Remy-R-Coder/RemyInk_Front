@@ -89,12 +89,14 @@ const Home = () => {
                         Connect instantly with our exclusive network of vetted experts – no signup required, just pure academic excellence delivered on demand.
                     </p>
                     <div className="cta-buttons">
+                        {/* 1. Show Dashboard for logged-in Freelancers */}
                         {isFreelancer && (
                             <Link href="/dashboard" className="btn primary">
                                 Go to Dashboard →
                             </Link>
                         )}
                     
+                        {/* 2. Show ONLY Browse Categories for Clients AND Guests */}
                         {(isClient || !currentUser) && (
                             <Link
                                 href={
@@ -107,12 +109,8 @@ const Home = () => {
                                 Browse Categories →
                             </Link>
                         )}
-                    
-                        {!currentUser && (
-                            <Link href="/login" className="btn secondary">
-                                Get Started
-                            </Link>
-                        )}
+                        
+                        {/* "Get Started" link removed to maintain a single CTA focus */}
                     </div>
                 </div>
             </section>
