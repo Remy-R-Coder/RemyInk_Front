@@ -26,34 +26,40 @@ const Home = () => {
     const existingSession = localStorage.getItem("guestSessionKey");
     if (existingSession) {
         setGuestSessionKey(existingSession);
-        return;
+           return;
     }
 
     const createGuestSession = async () => {
         try {
-            const res = await fetch("http://127.0.0.1:8000/api/users/csrf-and-session/", {
+            // This will automatically use your DigitalOcean URL in production
+            // and fall back to your local machine while you're coding.
+            const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+            
+            const res = await fetch(`${API_BASE}/api/users/csrf-and-session/`, {
                 method: "GET",
-                credentials: "include",
+                credentials: "include", 
             });
+    
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
+    
             const data = await res.json();
             const key = data.sessionId || data.session_key || data.sessionid;
-
+    
             if (key) {
                 localStorage.setItem("guestSessionKey", key);
                 setGuestSessionKey(key);
-            } else {
-                console.error("No session key returned:", data);
             }
         } catch (err) {
-            console.error("Failed to create guest session key:", err);
+            console.error("Guest session failed:", err);
         }
     };
     
     createGuestSession();
 
     }, []);
+    const isClient = currentUser?.role === "CLIENT";
+    const isFreelancer = currentUser?.role === "FREELANCER";
+
 
     const getDashboardPath = (role) => {
         switch (role) {
@@ -83,22 +89,29 @@ const Home = () => {
                         Connect instantly with our exclusive network of vetted experts – no signup required, just pure academic excellence delivered on demand.
                     </p>
                     <div className="cta-buttons">
-                        {currentUser ? (
-                            <Link href={getDashboardPath(currentUser.role) || "/dashboard"} className="btn primary">
+                        {isFreelancer && (
+                            <Link href="/dashboard" className="btn primary">
                                 Go to Dashboard →
                             </Link>
-                        ) : (
-                            <>
-                                <Link
-                                    href={guestSessionKey ? `/categories?session_key=${String(guestSessionKey)}` : "/categories"}
-                                    className="btn primary"
-                                >
-                                    Browse Categories →
-                                </Link>
-                                <Link href="/login" className="btn secondary">
-                                    Get Started
-                                </Link>
-                            </>
+                        )}
+                    
+                        {(isClient || !currentUser) && (
+                            <Link
+                                href={
+                                    guestSessionKey
+                                        ? `/categories?session_key=${String(guestSessionKey)}`
+                                        : "/categories"
+                                }
+                                className="btn primary"
+                            >
+                                Browse Categories →
+                            </Link>
+                        )}
+                    
+                        {!currentUser && (
+                            <Link href="/login" className="btn secondary">
+                                Get Started
+                            </Link>
                         )}
                     </div>
                 </div>
