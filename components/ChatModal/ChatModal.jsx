@@ -62,10 +62,10 @@ const groupMessagesByDate = (msgs) => {
     return groups;
 };
 
-const formatKES = (amount) =>
-    new Intl.NumberFormat("en-KE", {
+const formatUSD = (amount) =>
+    new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: "KES",
+        currency: "USD",
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(Number(amount) || 0);
