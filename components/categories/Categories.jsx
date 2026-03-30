@@ -9,6 +9,15 @@ import { useCreateThread } from "../../hooks/useChatHooks";
 import { MessageCircle, Star, Clock, DollarSign, CheckCircle, Loader, ChevronRight, User } from "lucide-react";
 import "./Categories.scss";
 
+const formatUSD = (amount) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
+
 const Categories = () => {
   const [categories, setCategories] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -174,7 +183,7 @@ const Categories = () => {
       freelancer.hourly_rate,
       freelancer.rate
     );
-    return avgPrice != null ? `KES ${avgPrice.toLocaleString("en-KE")}` : "N/A";
+    return avgPrice != null ? formatUSD(avgPrice) : "N/A";
   };
   const formatAvgDelivery = (freelancer) => {
     const profile = freelancer?.profile || {};
@@ -219,7 +228,7 @@ const Categories = () => {
       freelancer.completed_jobs,
       freelancer.jobs_completed
     );
-    return completed != null ? completed.toLocaleString("en-KE") : "N/A";
+    return completed != null ? completed.toLocaleString("en-US") : "N/A";
   };
 
   return (
