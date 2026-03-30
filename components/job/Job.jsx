@@ -25,7 +25,7 @@ export default function Job() {
   const [disputeReason, setDisputeReason] = useState("")
   const [adminResolution, setAdminResolution] = useState("pay_freelancer")
   const [adminResolutionNotes, setAdminResolutionNotes] = useState("")
-  const formatKES = (value) => `KES ${Number(value || 0).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const formatUSD = (value) => `$ ${Number(value || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   const toAbsoluteUrl = (value) => {
     if (!value || typeof value !== "string") return ""
     if (/^(https?:)?\/\//i.test(value) || value.startsWith("blob:") || value.startsWith("data:")) {
@@ -112,7 +112,7 @@ export default function Job() {
   const getApiErrorMessage = (error, fallback) => {
     const data = error?.response?.data
     if (typeof data === "string" && data.trim()) return data
-    if (data?.detail) return data.detail
+    if (data?.) return data.
     if (Array.isArray(data?.non_field_errors) && data.non_field_errors.length > 0) {
       return data.non_field_errors[0]
     }
@@ -206,7 +206,8 @@ export default function Job() {
       queryClient.invalidateQueries(["dashboardSummary"])
       queryClient.invalidateQueries(["dashboardJobs"])
       const earnedAmount = resolveFreelancerEarnings(job)
-      showSuccess(`Job accepted and completed. Freelancer earnings: ${formatKES(earnedAmount)}.`)
+      showSuccess(`Job accepted and completed. Freelancer earnings: ${formatUSD(earnedAmount)}.`)
+      
       if (isClient) {
         showInfo("Freelancer has been notified. Any open dispute was auto-resolved as RESOLVED_PAID.")
       }
@@ -631,7 +632,7 @@ export default function Job() {
     if (typeof window === "undefined" || localStorage.getItem(storageKey)) return
 
     const earnedAmount = resolveFreelancerEarnings(job)
-    showSuccess(`Job accepted by client. You earned ${formatKES(earnedAmount)}.`)
+    showSuccess(`Job accepted by client. You earned ${formatUSD(earnedAmount)}.`)
     showInfo("Project status updated to CLIENT_COMPLETED.")
     localStorage.setItem(storageKey, "1")
   }, [job, isFreelancer, normalizedStatus, showInfo, showSuccess])
@@ -787,7 +788,7 @@ export default function Job() {
               </div>
               <div className="detail-item">
                 <label>Total Amount</label>
-                <span className="amount">KES {Number(job.total_amount).toLocaleString()}</span>
+                <span className="amount">{formatUSD(job.total_amount)}</span>
               </div>
               <div className="detail-item">
                 <label>Delivery Time</label>
