@@ -183,6 +183,7 @@ const Categories = () => {
       freelancer.hourly_rate,
       freelancer.rate
     );
+    console.log("Debug avgPrice:", avgPrice);
     return avgPrice != null ? `$${avgPrice}` : "N/A";
   };
   const formatAvgDelivery = (freelancer) => {
