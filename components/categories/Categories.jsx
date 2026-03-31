@@ -183,7 +183,7 @@ const Categories = () => {
       freelancer.hourly_rate,
       freelancer.rate
     );
-    return avgPrice != null ? formatUSD(avgPrice) : "N/A";
+    return avgPrice != null ? `$${avgPrice}` : "N/A";
   };
   const formatAvgDelivery = (freelancer) => {
     const profile = freelancer?.profile || {};
