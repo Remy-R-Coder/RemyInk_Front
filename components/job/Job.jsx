@@ -111,18 +111,40 @@ export default function Job() {
 
   const getApiErrorMessage = (error, fallback) => {
     const data = error?.response?.data
-    if (typeof data === "string" && data.trim()) return data
-    if (data?.) return data.
-    if (Array.isArray(data?.non_field_errors) && data.non_field_errors.length > 0) {
+  
+    // backend returned plain string
+    if (typeof data === "string" && data.trim()) {
+      return data
+    }
+  
+    // DRF standard error
+    if (data?.detail) {
+      return data.detail
+    }
+  
+    // non_field_errors
+    if (
+      Array.isArray(data?.non_field_errors) &&
+      data.non_field_errors.length > 0
+    ) {
       return data.non_field_errors[0]
     }
+  
+    // field errors object
     if (data && typeof data === "object") {
       const firstKey = Object.keys(data)[0]
       const firstValue = data[firstKey]
-      if (Array.isArray(firstValue) && firstValue.length > 0) return String(firstValue[0])
-      if (typeof firstValue === "string") return firstValue
+  
+      if (Array.isArray(firstValue) && firstValue.length > 0) {
+        return String(firstValue[0])
+      }
+  
+      if (typeof firstValue === "string") {
+        return firstValue
+      }
     }
-    return fallback
+  
+    return fallback || "Something went wrong."
   }
 
   const parseContentDispositionFilename = (headerValue) => {
