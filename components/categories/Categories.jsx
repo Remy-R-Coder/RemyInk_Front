@@ -385,7 +385,6 @@ const Categories = () => {
                       <DollarSign size={16} className="stat-icon" />
                       <div className="stat-content">
                         <span className="stat-label">Avg Price</span>
-                        <span className="stat-value">{formatAvgPrice(freelancer)}</span>
                       </div>
                     </div>
                     <div className="stat-item">
