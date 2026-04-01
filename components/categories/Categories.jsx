@@ -240,8 +240,8 @@ const Categories = () => {
           {/* <div className="hero-icon">
             <Sparkles size={32} />
           </div> */}
-          <h1 className="hero-title">Find Your Perfect Expert</h1>
-          <p className="hero-subtitle">Connect with top professionals in just three simple steps</p>
+          <h1 className="hero-title">Find Help</h1>
+          <p className="hero-subtitle"> In just three simple steps</p>
         </div>
 
         {/* Progress Steps */}
@@ -291,7 +291,7 @@ const Categories = () => {
             <span className="step-badge">Step 1</span>
             Select Your Category
           </h2>
-          <p className="section-description">Choose the main area you need help with</p>
+          <p className="section-description">Choose the category that fits your needs</p>
         </div>
 
         <div className="categories-grid">
@@ -385,6 +385,7 @@ const Categories = () => {
                       <DollarSign size={16} className="stat-icon" />
                       <div className="stat-content">
                         <span className="stat-label">Avg Price</span>
+                        <span className="stat-value">${formatAvgPrice(freelancer)}</span>
                       </div>
                     </div>
                     <div className="stat-item">
