@@ -27,7 +27,6 @@ const getCurrentUsername = (userType) => {
     }
     return (userType || "guest").toLowerCase();
 };
-
 const getClientIdentity = (userType, sessionKey) => {
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
@@ -148,6 +147,7 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
     const lastSentMessageRef = useRef(null);
 
     const currentUsername = getCurrentUsername(userType);
+    const isFreelancer = userType === "freelancer";
     const [sessionKey, setSessionKey] = useState(() => {
         if (userType !== "guest") return null;
         return initialGuestSessionKey || guestSessionService.getSessionKey();
@@ -654,8 +654,10 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                                 </div>
                                 <textarea value={offerDescription} onChange={(e) => setOfferDescription(e.target.value)} placeholder="Description" />
                                 <div className="offer-form-actions">
-                                    <button className="btn-send-offer" type="button" onClick={handleCreateOffer}>Send Offer</button>
-                                    <button className="btn-cancel-offer" type="button" onClick={() => setShowOfferForm(false)}>Cancel</button>
+                                    {isFreelancer && (
+                                     <button className="btn-send-offer" type="button" onClick={handleCreateOffer}>Send Offer</button>
+                                     <button className="btn-cancel-offer" type="button" onClick={() => setShowOfferForm(false)}>Cancel</button>
+                                    )}                                    
                                 </div>
                             </div>
                         )}
