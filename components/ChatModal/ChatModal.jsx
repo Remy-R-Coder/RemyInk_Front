@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import httpClient from "@/api/httpClient";
 import guestSessionService from "@/services/guestSessionService";
 import chatApi from "@/api/chatApi";
@@ -27,6 +27,7 @@ const getCurrentUsername = (userType) => {
     }
     return (userType || "guest").toLowerCase();
 };
+
 const getClientIdentity = (userType, sessionKey) => {
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
@@ -139,7 +140,7 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
     const [offerPrice, setOfferPrice] = useState("");
     const [offerTimeline, setOfferTimeline] = useState("");
     const [offerDescription, setOfferDescription] = useState("");
-
+    
     const fileInputRef = useRef(null);
     const ws = useRef(null);
     const messagesEndRef = useRef(null);
@@ -147,12 +148,34 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
     const lastSentMessageRef = useRef(null);
 
     const currentUsername = getCurrentUsername(userType);
-    const isFreelancer = userType === "freelancer";
+    const isFreelancer = userType === "freelancer" || userType === "superuser";
+    const canSendOffer = userType === "freelancer" || userType === "superuser";
     const [sessionKey, setSessionKey] = useState(() => {
         if (userType !== "guest") return null;
         return initialGuestSessionKey || guestSessionService.getSessionKey();
     });
-    const clientIdentity = getClientIdentity(userType, sessionKey);
+
+    // Inside your ChatModal component:
+
+    const clientIdentity = useMemo(() => {
+        // Safety check for Next.js / SSR
+        if (typeof window === "undefined") return { type: "guest", id: "", username: "guest" };
+    
+        const storedUser = localStorage.getItem("currentUser");
+        if (storedUser) {
+            try {
+                const user = JSON.parse(storedUser);
+                return { 
+                    type: "user", 
+                    id: String(user.id || user.pk || user.user_id || ""), 
+                    username: (user.username || user.display_name || userType || "").toLowerCase() 
+                };
+            } catch (e) {
+                console.error("Failed to parse user", e);
+            }
+        }
+        return { type: "guest", id: String(sessionKey || ""), username: "guest" };
+    }, [userType, sessionKey]); // Only re-runs if these change
 
     const stateRef = useRef({ selectedThread, clientIdentity, sessionKey, updateThreadList: null });
 
@@ -367,7 +390,8 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
 
     const handleCreateOffer = (e) => {
         if (e?.preventDefault) e.preventDefault();
-        if (userType !== "freelancer") return alert("Only freelancers can send offers.");
+        if (!(userType === "freelancer" || userType === "superuser")) 
+            return alert("Your account doesnt support sending offers.");
         if (!offerTitle || !offerPrice || !offerTimeline) return alert("Please fill title, price, and timeline.");
         if (!ws.current || !isWsReady) return alert("Chat connection is not open.");
         const price = parseFloat(offerPrice);
@@ -582,7 +606,7 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                                                     {m.isOffer ? (
                                                         <div className="offer-box">
                                                             <strong>{m.offer?.title}</strong>
-                                                            <p>{formatKES(m.offer?.price)} - {m.offer?.timeline} days</p>
+                                                            <p>{formatUSD(m.offer?.price)} - {m.offer?.timeline} days</p>
                                                             {m.offer?.description && <p>{m.offer.description}</p>}
                                                             <div className="offer-actions">
                                                                 {userType !== "freelancer" && m.offer?.status === "pending" && (
@@ -635,12 +659,12 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                             </div>
                             <input ref={fileInputRef} type="file" multiple style={{ display: "none" }} onChange={onSelectFiles} />
                         </form>
-                        {showOfferForm && userType === "freelancer" && (
+                        {showOfferForm && (userType === "freelancer" || userType === "superuser") && (
                             <div className="offer-form">
                                 <div className="offer-inline-preview">
                                     <div className="preview-item">
                                         <span className="label">Offer Value</span>
-                                        <strong>{offerPrice ? formatKES(offerPrice) : "Set amount"}</strong>
+                                        <strong>{offerPrice ? formatUSD(offerPrice) : "Set amount"}</strong>
                                     </div>
                                     <div className="preview-item">
                                         <span className="label">Timeline</span>
@@ -649,20 +673,23 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                                 </div>
                                 <input value={offerTitle} onChange={(e) => setOfferTitle(e.target.value)} placeholder="Offer title" />
                                 <div className="offer-field-row">
-                                    <input type="number" min="0" step="0.01" value={offerPrice} onChange={(e) => setOfferPrice(e.target.value)} placeholder="Amount (KES)" />
+                                    <input type="number" min="0" step="0.01" value={offerPrice} onChange={(e) => setOfferPrice(e.target.value)} placeholder="Amount (USD)" />
                                     <input type="number" min="1" value={offerTimeline} onChange={(e) => setOfferTimeline(e.target.value)} placeholder="Timeline (days)" />
                                 </div>
                                 <textarea value={offerDescription} onChange={(e) => setOfferDescription(e.target.value)} placeholder="Description" />
                                 <div className="offer-form-actions">
-                                    {isFreelancer && (
-                                     <button className="btn-send-offer" type="button" onClick={handleCreateOffer}>Send Offer</button>
-                                     <button className="btn-cancel-offer" type="button" onClick={() => setShowOfferForm(false)}>Cancel</button>
+                                    {(userType === "freelancer" || userType === "superuser") && (
+                                        <>
+                                            <button className="btn-send-offer" type="button" onClick={handleCreateOffer}>Send Offer</button>
+                                            <button className="btn-cancel-offer" type="button" onClick={() => setShowOfferForm(false)}>Cancel</button>
+                                        </>
                                     )}                                    
                                 </div>
                             </div>
-                        )}
-                        {userType === "freelancer" && !showOfferForm && (
-                            <div className="send-offer-area"><button className="btn-create-offer" onClick={() => setShowOfferForm(true)}>Create Offer (KES)</button></div>
+                        {(userType === "freelancer" || userType === "superuser") && !showOfferForm && (
+                            <div className="send-offer-area">
+                                <button className="btn-create-offer" onClick={() => setShowOfferForm(true)}>Create Offer (USD)</button>
+                            </div>
                         )}
                     </div>
                 </div>
