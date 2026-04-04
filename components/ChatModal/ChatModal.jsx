@@ -23,7 +23,7 @@ const getCurrentUsername = (userType) => {
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
         const user = JSON.parse(storedUser);
-        return (user?.username || user?.display_name || userType || "me").toLowerCase();
+        return (user?.username || user?.display_name || "me").toLowerCase();
     }
     return (userType || "guest").toLowerCase();
 };
@@ -32,7 +32,7 @@ const getClientIdentity = (userType, sessionKey) => {
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
         const user = JSON.parse(storedUser);
-        return { type: "user", id: String(user.id || user.pk || user.user_id || ""), username: (user.username || user.display_name || userType || "").toLowerCase() };
+        return { type: "user", id: String(user.id || user.pk || user.user_id || ""), username: (user.username || user.display_name || "").toLowerCase() };
     }
     return { type: "guest", id: String(sessionKey || ""), username: "guest" };
 };
@@ -168,7 +168,7 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                 return { 
                     type: "user", 
                     id: String(user.id || user.pk || user.user_id || ""), 
-                    username: (user.username || user.display_name || userType || "").toLowerCase() 
+                    username: (user.username || user.display_name || "").toLowerCase()
                 };
             } catch (e) {
                 console.error("Failed to parse user", e);
@@ -659,7 +659,7 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                             </div>
                             <input ref={fileInputRef} type="file" multiple style={{ display: "none" }} onChange={onSelectFiles} />
                         </form>
-                        {showOfferForm && (userType === "freelancer" || userType === "superuser") && (
+                        {showOfferForm && canSendOffer && (
                             <div className="offer-form">
                                 <div className="offer-inline-preview">
                                     <div className="preview-item">
