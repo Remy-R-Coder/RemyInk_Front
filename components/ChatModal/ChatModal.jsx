@@ -11,7 +11,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 
 const getToken = () => { 
-    let token = localStorage.getItem("access");
+    let token = localStorage.getItem("access"); 
     if (!token) {
         const storedUser = localStorage.getItem("currentUser");
         if (storedUser) token = JSON.parse(storedUser)?.token;
