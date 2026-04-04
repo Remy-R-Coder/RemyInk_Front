@@ -152,7 +152,7 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
 
     const currentUsername = getCurrentUsername(userType);
     const isFreelancer = userType === "freelancer" || userType === "superuser";
-    const canSendOffer = userType === "freelancer" || userType === "superuser";
+    const normalizedUserType = String(userType || "guest").toLowerCase();
     const canSendOffer = userType !== "guest" && userType !== "client" && (userType === "freelancer" || userType === "superuser");
     const [sessionKey, setSessionKey] = useState(() => {
         if (userType !== "guest") return null;
@@ -684,12 +684,16 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                                 </div>
                                 <textarea value={offerDescription} onChange={(e) => setOfferDescription(e.target.value)} placeholder="Description" />
                                 <div className="offer-form-actions">
-                                    {(userType === "freelancer" || userType === "superuser") && (
+                                    {canSendOffer && (
                                         <>
-                                            <button className="btn-send-offer" type="button" onClick={handleCreateOffer}>Send Offer</button>
-                                            <button className="btn-cancel-offer" type="button" onClick={() => setShowOfferForm(false)}>Cancel</button>
+                                            <button className="btn-send-offer" type="button" onClick={handleCreateOffer}>
+                                                Send Offer
+                                            </button>
+                                            <button className="btn-cancel-offer" type="button" onClick={() => setShowOfferForm(false)}>
+                                                Cancel
+                                            </button>
                                         </>
-                                    )}                                    
+                                    )}
                                 </div>
                             </div>
                         {(userType === "freelancer" || userType === "superuser") && !showOfferForm && (
