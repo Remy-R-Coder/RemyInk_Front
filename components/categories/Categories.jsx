@@ -28,6 +28,7 @@ const Categories = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const subjectsRequestRef = useRef(0);
+  const freelancersRequestRef = useRef(0); // <--- Add this line here
 
   const { isAuthenticated } = useAuth();
   const { showSuccess, showError } = useNotification();
@@ -54,6 +55,8 @@ const Categories = () => {
       setFreelancers([]);
       return;
     }
+    
+    setSelectedSubject(null); // <--- MOVE THIS TO HERE (Top of the function)
     const requestId = ++subjectsRequestRef.current;
     setLoading(true);
     try {
@@ -63,7 +66,6 @@ const Categories = () => {
       // Ignore stale responses if user switched categories quickly.
       if (requestId !== subjectsRequestRef.current) return;
       setSubjects(res.data.results || []);
-      setSelectedSubject(null);
       setError("");
     } catch (err) {
       if (requestId !== subjectsRequestRef.current) return;
@@ -75,33 +77,39 @@ const Categories = () => {
       }
     }
   }, [selectedCategory, showError]);
-
   const fetchFreelancers = useCallback(async () => {
     if (!selectedSubject) {
       setFreelancers([]);
       return;
     }
+    
+    const requestId = ++freelancersRequestRef.current; // <--- ADD THIS
     setLoading(true);
+    
     try {
-      let res = await httpClient.get(
-        `/users/freelancers/?subject_id=${selectedSubject}`
-      );
+      let res = await httpClient.get(`/users/freelancers/?subject_id=${selectedSubject}`);
       let results = res.data.results || [];
-
+  
       if (results.length === 0) {
         const fallbackRes = await httpClient.get(
           `/users/freelancers/?subject_id=${selectedSubject}&fallback_admin=true`
         );
         results = fallbackRes.data.results || [];
       }
-
+  
+      // CHECK FOR STALE REQUEST
+      if (requestId !== freelancersRequestRef.current) return;
+  
       setFreelancers(results);
       setError("");
     } catch (err) {
+      if (requestId !== freelancersRequestRef.current) return;
       setError("Failed to fetch experts.");
       showError("Failed to fetch experts");
     } finally {
-      setLoading(false);
+      if (requestId === freelancersRequestRef.current) {
+        setLoading(false);
+      }
     }
   }, [selectedSubject, showError]);
 
@@ -116,11 +124,11 @@ const Categories = () => {
   useEffect(() => {
     fetchFreelancers();
   }, [fetchFreelancers]);
-
   const handleCategoryClick = (id) => {
     const isCurrentlySelected = selectedCategory === id;
     setSelectedCategory(isCurrentlySelected ? null : id);
-    setSubjects([]);
+    
+    // Immediately clear the sub-selections so the UI updates instantly
     setSelectedSubject(null);
     setFreelancers([]);
   };
