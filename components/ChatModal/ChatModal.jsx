@@ -19,13 +19,17 @@ const getToken = () => {
     return token;
 };
 
-const getCurrentUsername = (userType) => {
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-        const user = JSON.parse(storedUser);
-        return (user?.username || user?.display_name || "me").toLowerCase();
+const getCurrentUsername = () => {
+    try {
+        const storedUser = localStorage.getItem("currentUser");
+        if (storedUser) {
+            const user = JSON.parse(storedUser);
+            return (user?.username || user?.display_name || "me").toLowerCase();
+        }
+    } catch (err) {
+        console.error("Error parsing currentUser:", err);
     }
-    return (userType || "guest").toLowerCase();
+    return "guest"; // safe fallback
 };
 
 const getClientIdentity = (userType, sessionKey) => {
