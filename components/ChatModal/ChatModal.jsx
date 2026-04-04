@@ -153,6 +153,7 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
     const currentUsername = getCurrentUsername(userType);
     const isFreelancer = userType === "freelancer" || userType === "superuser";
     const canSendOffer = userType === "freelancer" || userType === "superuser";
+    const canSendOffer = userType !== "guest" && userType !== "client" && (userType === "freelancer" || userType === "superuser");
     const [sessionKey, setSessionKey] = useState(() => {
         if (userType !== "guest") return null;
         return initialGuestSessionKey || guestSessionService.getSessionKey();
@@ -569,6 +570,8 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
 
     if (!isOpen) return null;
 
+    console.log("userType:", userType, "canSendOffer:", canSendOffer);
+    
     return (
         <div className="chat-overlay" onClick={onClose}>
             <div className="chat-modal" onClick={(e) => e.stopPropagation()}>
