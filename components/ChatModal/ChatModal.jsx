@@ -18,10 +18,9 @@ const getToken = () => {
     }
     return token;
 };
-
 const getCurrentUsername = () => {
     try {
-        const storedUser = localStorage.getItem("currentUser");
+        const storedUser = typeof window !== "undefined" ? localStorage.getItem("currentUser") : null;
         if (storedUser) {
             const user = JSON.parse(storedUser);
             return (user?.username || user?.display_name || "me").toLowerCase();
@@ -29,7 +28,7 @@ const getCurrentUsername = () => {
     } catch (err) {
         console.error("Error parsing currentUser:", err);
     }
-    return "guest"; // safe fallback
+    return "guest"; // Simple, safe, and no undefined variables
 };
 
 const getClientIdentity = (userType, sessionKey) => {
