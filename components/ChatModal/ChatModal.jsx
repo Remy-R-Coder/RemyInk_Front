@@ -139,6 +139,11 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
     const [showOfferForm, setShowOfferForm] = useState(false);
     const [isWsReady, setIsWsReady] = useState(false);
     const [attachmentsToSend, setAttachmentsToSend] = useState([]);
+    const [canSendOffer, setCanSendOffer] = useState(false);
+    // Change this (source 269):
+    const isEligibleToSendOffer = useMemo(() => {
+        return userType === "freelancer"; // Use "freelancer" instead of "employer"
+    }, [userType]);
     const [offerTitle, setOfferTitle] = useState("");
     const [offerPrice, setOfferPrice] = useState("");
     const [offerTimeline, setOfferTimeline] = useState("");
@@ -151,9 +156,7 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
     const lastSentMessageRef = useRef(null);
 
     const currentUsername = getCurrentUsername(userType);
-    const isFreelancer = userType === "freelancer" || userType === "superuser";
     const normalizedUserType = String(userType || "guest").toLowerCase();
-    const canSendOffer = userType !== "guest" && userType !== "client" && (userType === "freelancer" || userType === "superuser");
     const [sessionKey, setSessionKey] = useState(() => {
         if (userType !== "guest") return null;
         return initialGuestSessionKey || guestSessionService.getSessionKey();
@@ -234,6 +237,7 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                 return isolateThreadView ? [normalizedNewThread] : [normalizedNewThread, ...filtered];
             });
             setSelectedThread(normalizedNewThread);
+            setCanSendOffer(Boolean(normalizedNewThread?.can_send_offer));
             if (newKey) {
                 setSessionKey(newKey);
                 guestSessionService.setSessionKey(newKey);
@@ -242,6 +246,9 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
             if (normalizedNewThread?.id) fetchMessagesForThread(normalizedNewThread, newKey || sessionKey);
             return normalizedNewThread;
         } catch { return null; }
+            if (thread?.can_send_offer !== undefined) {
+                    setCanSendOffer(Boolean(thread.can_send_offer));
+                }
     }, [freelancerUsername, userType, currentUsername, isolateThreadView, sessionKey, fetchMessagesForThread]);
 
     const updateThreadList = useCallback((threadId, lastMessageText, newMessageObject = null) => {
@@ -390,12 +397,12 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
         setInputMessage(""); setAttachmentsToSend([]);
         const threadIdToUpdate = selectedThread?.id || selectedThread?.temp_id;
         if (threadIdToUpdate) updateThreadList(threadIdToUpdate, trimmed || "Attachment(s) sent");
-    };
-
+        };
     const handleCreateOffer = (e) => {
         if (e?.preventDefault) e.preventDefault();
-        if (!(userType === "freelancer" || userType === "superuser")) 
-            return alert("Your account doesnt support sending offers.");
+        // Correcting roles to match backend expectations
+        if (!(userType === "freelancer" || userType === "superuser")) {
+            return alert("Only freelancers can send offers.");
         if (!offerTitle || !offerPrice || !offerTimeline) return alert("Please fill title, price, and timeline.");
         if (!ws.current || !isWsReady) return alert("Chat connection is not open.");
         const price = parseFloat(offerPrice);
@@ -684,16 +691,23 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                                 </div>
                                 <textarea value={offerDescription} onChange={(e) => setOfferDescription(e.target.value)} placeholder="Description" />
                                 <div className="offer-form-actions">
-                                    {canSendOffer && (
-                                        <>
-                                            <button className="btn-send-offer" type="button" onClick={handleCreateOffer}>
-                                                Send Offer
-                                            </button>
-                                            <button className="btn-cancel-offer" type="button" onClick={() => setShowOfferForm(false)}>
-                                                Cancel
-                                            </button>
-                                        </>
+                                    {(userType === "freelancer" || userType === "superuser") && canSendOffer && (
+                                        <button 
+                                            className="btn-send-offer" 
+                                            type="button" 
+                                            onClick={handleCreateOffer}
+                                        >
+                                            Send Offer
+                                        </button>
                                     )}
+                                    
+                                    <button 
+                                        className="btn-cancel-offer" 
+                                        type="button" 
+                                        onClick={() => setShowOfferForm(false)}
+                                    >
+                                        Cancel
+                                    </button>
                                 </div>
                             </div>
                         {(userType === "freelancer" || userType === "superuser") && !showOfferForm && (
