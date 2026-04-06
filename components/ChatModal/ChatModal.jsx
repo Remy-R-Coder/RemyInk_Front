@@ -141,8 +141,11 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
     const [attachmentsToSend, setAttachmentsToSend] = useState([]);
     const [canSendOffer, setCanSendOffer] = useState(false);
     // Change this (source 269):
+    // Locate this block in your ChatModal component:
     const isEligibleToSendOffer = useMemo(() => {
-        return userType === "freelancer"; // Use "freelancer" instead of "employer"
+        // Only allow actual freelancers or superusers to see/send offers
+        // This will return false for "guest" or "client"
+        return userType === "freelancer" || userType === "superuser"; 
     }, [userType]);
     const [offerTitle, setOfferTitle] = useState("");
     const [offerPrice, setOfferPrice] = useState("");
@@ -690,8 +693,8 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                                     <input type="number" min="1" value={offerTimeline} onChange={(e) => setOfferTimeline(e.target.value)} placeholder="Timeline (days)" />
                                 </div>
                                 <textarea value={offerDescription} onChange={(e) => setOfferDescription(e.target.value)} placeholder="Description" />
-                                <div className="offer-form-actions">
-                                    {(userType === "freelancer" || userType === "superuser") && canSendOffer && (
+                                {isEligibleToSendOffer && (
+                                    <div className="offer-form-actions">
                                         <button 
                                             className="btn-send-offer" 
                                             type="button" 
@@ -699,17 +702,15 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                                         >
                                             Send Offer
                                         </button>
-                                    )}
-                                    
-                                    <button 
-                                        className="btn-cancel-offer" 
-                                        type="button" 
-                                        onClick={() => setShowOfferForm(false)}
-                                    >
-                                        Cancel
-                                    </button>
+                                        <button 
+                                            className="btn-cancel-offer" 
+                                            type="button" 
+                                            onClick={() => setShowOfferForm(false)}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
                         {(userType === "freelancer" || userType === "superuser") && !showOfferForm && (
                             <div className="send-offer-area">
                                 <button className="btn-create-offer" onClick={() => setShowOfferForm(true)}>Create Offer (USD)</button>
