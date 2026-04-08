@@ -16,13 +16,16 @@ const OfferManagement = ({
   const [filterStatus, setFilterStatus] = useState("pending") 
   const [sortBy, setSortBy] = useState("newest") 
 
+  /**
+   * Updated Formatter: Uses US locale and USD currency
+   */
   const formatCurrency = (amount) => {
     const num = parseFloat(amount) || 0
-    return new Intl.NumberFormat("en-KE", {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "KES",
+      currency: "USD",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 2,
     }).format(num)
   }
 
@@ -161,7 +164,7 @@ const OfferManagement = ({
                   </strong>
                   {offer.created_at && (
                     <span className="offer-date">
-                      {new Date(offer.created_at).toLocaleDateString('en-KE', {
+                      {new Date(offer.created_at).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
@@ -209,9 +212,7 @@ const OfferManagement = ({
                 onReject={(offerId) => onReject(offerId, offer.thread_info?.id)}
                 canRespond={true}
                 isPending={offer.offer_status === "pending"}
-                // --- FIX APPLIED HERE ---
-                isCreator={false} // The receiver of the offer is NEVER the creator in this component
-                // -------------------------
+                isCreator={false}
               />
 
               {offer.offer_status === "pending" && (

@@ -64,13 +64,18 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: clamp(12px, 1.4vw, 20px) clamp(12px, 1.4vw, 20px);
-  background:
+  padding: clamp(12px, 1.4vw, 20px);
+  background: 
     linear-gradient(
-      180deg,
-      oklch(from #f8fafc l c h / 0.92) 0%,
-      oklch(from #f1f5f9 l c h / 0.88) 100%
-    );
+      180deg, 
+      oklch(43.145% 0.16753 28.062 / 0.03) 0%, /* Very subtle red tint overlay */
+      transparent 100%
+    ),
+    #f1f1f4; /* A slightly darker, warmer base grey */
+
+  /* NEW: This creates the "slim" conversation lane */
+  display: flex;
+  flex-direction: column;
 }
 
 .thread-job-panel {
@@ -239,10 +244,12 @@
   gap: 8px;
 }
 
+/* WhatsApp Updated Message Layout */
+/* WhatsApp Updated Message Layout */
 .thread-message-row {
   display: flex;
   width: 100%;
-  margin-bottom: 8px;
+  margin-bottom: 8px; /* Slightly more breathing room */
 }
 
 .thread-message-row--mine {
@@ -254,40 +261,57 @@
 }
 
 .thread-message-content {
-  width: min(74%, 760px);
+  width: auto;
+  max-width: min(82%, 800px);
+  display: flex;
+  flex-direction: column;
 }
 
 .thread-message-content--mine {
-  margin-left: auto;
+  align-items: flex-end;
 }
 
 .thread-message-content--theirs {
-  margin-right: auto;
+  align-items: flex-start;
 }
 
+/* WhatsApp Style Bubbles with Theme Colors */
 .chat-bubble {
-  border: 1px solid;
-  border-radius: 10px;
+  border: none;
   font-size: clamp(0.92rem, 0.2vw + 0.88rem, 1rem);
-  line-height: 1.5;
+  line-height: 1.45;
+  padding: 8px 14px;
+  width: fit-content;
+  word-wrap: break-word;
+  position: relative;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1) !important;
 }
 
+/* "Mine" Bubble - Themed Red */
 .chat-bubble--mine {
-  background: #dc2626;
-  border-color: #b91c1c;
-  color: #ffffff;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-  border-bottom-left-radius: 10px;
+  /* Using a very soft red tint to keep text readable */
+  background: oklch(from #dc2626 l c h / 0.12); 
+  color: #991b1b; /* Deep red text */
+  border: 1px solid oklch(from #dc2626 l c h / 0.2);
+  /* WhatsApp "Tail" geometry: Sharp top-right */
+  border-radius: 12px 0px 12px 12px;
 }
 
+/* "Theirs" Bubble - Themed White/Grey */
 .chat-bubble--theirs {
   background: #ffffff;
-  border-color: #e2e8f0;
   color: #1f2937;
-  border-top-left-radius: 4px;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 10px;
+  border: 1px solid #e2e8f0;
+  /* WhatsApp "Tail" geometry: Sharp top-left */
+  border-radius: 0px 12px 12px 12px;
+}
+
+/* Optional: Add a subtle timestamp style common in WhatsApp */
+.message-time {
+  font-size: 0.7rem;
+  margin-top: 4px;
+  color: #94a3b8;
+  padding: 0 4px;
 }
 
 .thread-modern__attachments {
@@ -466,10 +490,6 @@
     max-width: min(1100px, 97vw);
     height: clamp(520px, 70vh, 780px);
   }
-
-  .thread-message-content {
-    width: min(80%, 680px);
-  }
 }
 
 @media (max-width: 992px) {
@@ -478,10 +498,6 @@
     max-width: 100%;
     min-height: 520px;
     height: min(70vh, 720px);
-  }
-
-  .thread-message-content {
-    width: min(84%, 620px);
   }
 }
 
@@ -519,7 +535,7 @@
   }
 
   .thread-message-content {
-    width: min(90%, 560px);
+    max-width: 88%;
   }
 
   .thread-conversion-banner {
@@ -551,7 +567,7 @@
   }
 
   .thread-message-content {
-    width: min(93%, 520px);
+    max-width: 94%;
   }
 
   .thread-send-cta {

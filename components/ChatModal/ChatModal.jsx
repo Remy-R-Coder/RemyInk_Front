@@ -130,6 +130,7 @@ const getSelectedThreadStorageKey = (userType, sessionKey) =>
         : "selectedThreadId:auth";
 
 const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId = null, initialGuestSessionKey = null, freelancerId = null, freelancerUsername = null, onClose, isolateThreadView = false }) => {
+    const normalizedUserType = String(userType || "guest").toLowerCase();
     const [threads, setThreads] = useState([]);
     const [threadsLoading, setThreadsLoading] = useState(true);
     const [selectedThread, setSelectedThread] = useState(null);
@@ -143,10 +144,11 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
     // Change this (source 269):
     // Locate this block in your ChatModal component:
     const isEligibleToSendOffer = useMemo(() => {
-        // Only allow actual freelancers or superusers to see/send offers
+        // Only allow actual freelancers or superusers to
+        //  see/send offers
         // This will return false for "guest" or "client"
-        return userType === "freelancer" || userType === "superuser"; 
-    }, [userType]);
+        return normalizedUserType === "freelancer" || normalizedUserType === "superuser";
+    }, [normalizedUserType]);
     const [offerTitle, setOfferTitle] = useState("");
     const [offerPrice, setOfferPrice] = useState("");
     const [offerTimeline, setOfferTimeline] = useState("");
@@ -158,8 +160,7 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
     const currentThreadRef = useRef(null);
     const lastSentMessageRef = useRef(null);
 
-    const currentUsername = getCurrentUsername(userType);
-    const normalizedUserType = String(userType || "guest").toLowerCase();
+    const currentUsername = getCurrentUsername();
     const [sessionKey, setSessionKey] = useState(() => {
         if (userType !== "guest") return null;
         return initialGuestSessionKey || guestSessionService.getSessionKey();
@@ -247,11 +248,14 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                 guestSessionService.setThreadSessionKey(normalizedNewThread?.id, newKey);
             }
             if (normalizedNewThread?.id) fetchMessagesForThread(normalizedNewThread, newKey || sessionKey);
+
+
             return normalizedNewThread;
-        } catch { return null; }
-            if (thread?.can_send_offer !== undefined) {
-                    setCanSendOffer(Boolean(thread.can_send_offer));
-                }
+            } catch (err) {
+                console.error("Failed to create/fetch thread:", err);
+                return null;
+            }
+
     }, [freelancerUsername, userType, currentUsername, isolateThreadView, sessionKey, fetchMessagesForThread]);
 
     const updateThreadList = useCallback((threadId, lastMessageText, newMessageObject = null) => {
@@ -406,6 +410,7 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
         // Correcting roles to match backend expectations
         if (!(userType === "freelancer" || userType === "superuser")) {
             return alert("Only freelancers can send offers.");
+        }
         if (!offerTitle || !offerPrice || !offerTimeline) return alert("Please fill title, price, and timeline.");
         if (!ws.current || !isWsReady) return alert("Chat connection is not open.");
         const price = parseFloat(offerPrice);
@@ -675,54 +680,54 @@ const ChatModal = ({ isOpen = true, userType = "guest", initialSelectedThreadId 
                             </div>
                             <input ref={fileInputRef} type="file" multiple style={{ display: "none" }} onChange={onSelectFiles} />
                         </form>
-                        {showOfferForm && canSendOffer && (
+                        {/* --- OFFER FORM SECTION --- */}
+                        {isEligibleToSendOffer && canSendOffer && showOfferForm && (
                             <div className="offer-form">
                                 <div className="offer-inline-preview">
                                     <div className="preview-item">
-                                        <span className="label">Offer Value</span>
+                                        <span className="label">Offer Value</span> 
                                         <strong>{offerPrice ? formatUSD(offerPrice) : "Set amount"}</strong>
-                                    </div>
+                                    </div> 
                                     <div className="preview-item">
                                         <span className="label">Timeline</span>
                                         <strong>{offerTimeline ? `${offerTimeline} day${Number(offerTimeline) > 1 ? "s" : ""}` : "Set timeline"}</strong>
                                     </div>
                                 </div>
+                                
                                 <input value={offerTitle} onChange={(e) => setOfferTitle(e.target.value)} placeholder="Offer title" />
+                                
                                 <div className="offer-field-row">
                                     <input type="number" min="0" step="0.01" value={offerPrice} onChange={(e) => setOfferPrice(e.target.value)} placeholder="Amount (USD)" />
                                     <input type="number" min="1" value={offerTimeline} onChange={(e) => setOfferTimeline(e.target.value)} placeholder="Timeline (days)" />
                                 </div>
+                                
                                 <textarea value={offerDescription} onChange={(e) => setOfferDescription(e.target.value)} placeholder="Description" />
-                                {isEligibleToSendOffer && (
-                                    <div className="offer-form-actions">
-                                        <button 
-                                            className="btn-send-offer" 
-                                            type="button" 
-                                            onClick={handleCreateOffer}
-                                        >
-                                            Send Offer
-                                        </button>
-                                        <button 
-                                            className="btn-cancel-offer" 
-                                            type="button" 
-                                            onClick={() => setShowOfferForm(false)}
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
+                                
+                                <div className="offer-form-actions">
+                                    <button className="btn-send-offer" type="button" onClick={handleCreateOffer}>
+                                        Send Offer
+                                    </button>
+                                    <button className="btn-cancel-offer" type="button" onClick={() => setShowOfferForm(false)}>
+                                        Cancel
+                                    </button>
                                 </div>
-                        {(userType === "freelancer" || userType === "superuser") && !showOfferForm && (
+                            </div> 
+                        )}
+
+                        {/* --- CREATE OFFER TRIGGER BUTTON --- */}
+                        {isEligibleToSendOffer && !showOfferForm && (
                             <div className="send-offer-area">
-                                <button className="btn-create-offer" onClick={() => setShowOfferForm(true)}>Create Offer (USD)</button>
+                                <button className="btn-create-offer" onClick={() => setShowOfferForm(true)}>
+                                    Create Offer (USD)
+                                </button>
                             </div>
                         )}
-                    </div>
-                </div>
+                    </div> {/* Closes chat-section */}
+                </div> {/* Closes chat-body */}
                 <div className="modal-footer" />
-            </div>
+            </div> 
         </div>
     );
 };
 
 export default ChatModal;
-

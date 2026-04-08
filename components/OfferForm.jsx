@@ -5,10 +5,14 @@ import "./OfferForm.scss"
 
 const MAX_ATTACHMENTS = 3
 const MAX_FILE_SIZE_MB = 10
-const formatKES = (amount) =>
-  new Intl.NumberFormat("en-KE", {
+
+/**
+ * Updated Formatter: Uses US locale and USD currency
+ */
+const formatUSD = (amount) =>
+  new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "KES",
+    currency: "USD",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Number(amount) || 0)
@@ -35,7 +39,7 @@ const OfferForm = ({ onSend, onCancel, isSending }) => {
 
     const price = parseFloat(offer.price)
     if (!offer.price || isNaN(price) || price <= 0) {
-      newErrors.price = "Price must be a valid amount greater than KES 0."
+      newErrors.price = "Price must be a valid amount greater than $0."
     }
 
     const timeline = parseInt(offer.timeline)
@@ -141,7 +145,7 @@ const OfferForm = ({ onSend, onCancel, isSending }) => {
           <div className="preview-item">
             <span className="preview-label">Offer value</span>
             <strong className="preview-value">
-              {Number.isFinite(priceValue) && priceValue > 0 ? formatKES(priceValue) : "Set price"}
+              {Number.isFinite(priceValue) && priceValue > 0 ? formatUSD(priceValue) : "Set price"}
             </strong>
           </div>
           <div className="preview-divider" />
@@ -172,10 +176,10 @@ const OfferForm = ({ onSend, onCancel, isSending }) => {
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="offer-price">
-              Price (KES) <span className="required">*</span>
+              Price (USD) <span className="required">*</span>
             </label>
             <div className="input-with-icon">
-              <span className="input-icon">KES</span>
+              <span className="input-icon">$</span>
               <input
                 id="offer-price"
                 type="number"
@@ -184,7 +188,7 @@ const OfferForm = ({ onSend, onCancel, isSending }) => {
                 value={offer.price}
                 onChange={(e) => handleChange("price", e.target.value)}
                 className={`form-input with-icon ${errors.price ? "error" : ""}`}
-                placeholder="5000.00"
+                placeholder="50.00"
                 disabled={isSending}
               />
             </div>

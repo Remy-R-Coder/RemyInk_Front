@@ -16,10 +16,14 @@ const PAYMENT_SUCCESS_STATUSES = ["PAID", "ASSIGNED", "IN_PROGRESS", "DELIVERED"
 const PAYMENT_PENDING_STATUSES = ["PROVISIONAL", "PENDING_PAYMENT"]
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_PASSWORD_LENGTH = 8
-const formatKES = (amount) =>
-  new Intl.NumberFormat("en-KE", {
+
+/**
+ * Updated Formatter: Now uses US English locale and USD currency.
+ */
+const formatUSD = (amount) =>
+  new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "KES",
+    currency: "USD",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Number(amount) || 0)
@@ -55,7 +59,7 @@ const OfferCard = ({ offer, onAccept, onReject, canRespond, isPending, isCreator
         if (!isMounted) return
         setLiveJob(response.data)
       } catch (error) {
-        // Keep fallback snapshot from message payload.
+        // Keep fallback snapshot
       }
     }
 
@@ -112,12 +116,11 @@ const OfferCard = ({ offer, onAccept, onReject, canRespond, isPending, isCreator
 
       setPaymentSyncState("syncing")
 
-      // Best effort verification for deployments exposing this endpoint.
       if (reference) {
         try {
           await httpClient.post("/orders/payments/paystack/verify/", { reference })
         } catch (error) {
-          // Continue with polling job status.
+          // Continue polling
         }
       }
 
@@ -150,16 +153,13 @@ const OfferCard = ({ offer, onAccept, onReject, canRespond, isPending, isCreator
             clearPaymentParams()
             return
           }
-        } catch (error) {
-          // keep polling
-        }
+        } catch (error) {}
 
         await new Promise((resolve) => setTimeout(resolve, 1500))
       }
 
       if (!isMounted) return
       if (status === "success" || status === "successful") {
-        // Prevent stale "pending" UI even when backend propagation lags.
         setLiveJob((prev) => ({
           ...(prev || {}),
           id: jobId,
@@ -378,7 +378,7 @@ const OfferCard = ({ offer, onAccept, onReject, canRespond, isPending, isCreator
           <div className="metric-item metric-price">
             <label>Price</label>
             <p className="metric-value">
-              {formatKES(offer.price)}
+              {formatUSD(offer.price)}
             </p>
           </div>
           <div className="metric-item metric-timeline">
@@ -491,7 +491,6 @@ const OfferCard = ({ offer, onAccept, onReject, canRespond, isPending, isCreator
         </div>
       )}
 
-      {/* Logic to hide Accept/Reject for the offer creator (client) */}
       {canRespond && isPending && !isCreator && (
         <div className="offer-card-actions">
           <p className="offer-response-helper">
