@@ -150,13 +150,23 @@ const chatApi = {
     return response.data;
   },
 
-  uploadFile: async (file, messageId = null, threadId = null) => {
+  uploadFile: async (file, messageId = null, threadId = null, sessionKey = null) => {
     const formData = new FormData();
     formData.append("file", file);
+    
+    // Add IDs if they exist
     if (messageId) formData.append("message_id", messageId);
     if (threadId) formData.append("message_thread_id", threadId);
 
-    const response = await httpClient.post("/chat/upload/", formData);
+    // Prepare config with headers and session_key if provided
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      params: sessionKey ? { session_key: sessionKey } : {},
+    };
+
+    const response = await httpClient.post("/chat/upload/", formData, config);
     return response.data;
   },
 
