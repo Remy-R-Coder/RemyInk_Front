@@ -21,6 +21,15 @@ const Profile = () => {
 
   const [alias, setAlias] = useState(currentUser?.alias || "")
   const [profileUser, setProfileUser] = useState(currentUser)
+    // Step 1: Identify if the user is a freelancer
+  const isFreelancer = useMemo(() => {
+    return profileUser?.is_freelancer === true
+  }, [profileUser])
+  const RoleGuard = ({ allow, children, fallback = null }) => {
+  if (allow === "FREELANCER" && !isFreelancer) return fallback
+  if (allow === "CLIENT" && isFreelancer) return fallback
+  return children
+}
   const defaultProfile = "/img/Profile default.png"
   const [picture, setPicture] = useState(currentUser?.picture || defaultProfile)
   const [country, setCountry] = useState(currentUser?.country || "")
@@ -490,12 +499,14 @@ const Profile = () => {
       <div className="profile-hero">
         <div className="hero-background"></div>
         <div className="hero-content">
-          <div className="profile-avatar">
-            <img src={picture || defaultProfile} alt="profile" />
-            <div className="avatar-badge">
-              <User size={20} />
+           <RoleGuard allow="CLIENT">
+            <div className="profile-avatar">
+              <img src={picture || defaultProfile} alt="profile" />
+              <div className="avatar-badge">
+                <User size={20} />
+              </div>
             </div>
-          </div>
+          </RoleGuard>
           <div className="profile-details">
             <div className="username-section">
               <h1>@{profileUser?.username || "unknown"}</h1>
@@ -551,9 +562,9 @@ const Profile = () => {
           <span>{status.message}</span>
         </div>
       )}
-
       <div className="profile-content">
         {/* Profile Settings Card */}
+        <RoleGuard allow="CLIENT">
         <div className="settings-card">
           <div className="card-header">
             <h2>Profile Settings</h2>
@@ -704,6 +715,7 @@ const Profile = () => {
             </div>
           </div>
         </div>
+      </RoleGuard>
 
         <div className="account-card">
           <div className="card-header">
