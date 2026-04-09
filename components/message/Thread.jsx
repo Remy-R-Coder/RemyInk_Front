@@ -1109,12 +1109,9 @@ export default function Thread() {
           multiple
           disabled={isUploading || isSending}
         />
-
-
-
-
+        
         {/* Only render the Send Offer button if the user is authenticated */}
-        {isAuthenticated && (
+        {isAuthenticated && currentRole !== "CLIENT" && ( 
             <button
                 type="button"
                 onClick={() => setShowOfferForm(!showOfferForm)}
