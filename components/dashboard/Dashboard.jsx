@@ -572,9 +572,12 @@ const Dashboard = () => {
         </header>
 
         {/* Stats Section */}
-        <section className="stats-section">
-          <DashboardStats stats={computedStats} userRole={userRole} />
-        </section>
+        
+        {!isClient && (
+          <section className="stats-section">
+            <DashboardStats stats={computedStats} userRole={userRole} />
+          </section>
+        )}
 
         {/* Recent Activity / Notifications */}
         <section className="notifications-section">
