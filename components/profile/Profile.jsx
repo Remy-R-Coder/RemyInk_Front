@@ -28,6 +28,7 @@ const Profile = () => {
   const RoleGuard = ({ allow, children, fallback = null }) => {
   if (allow === "FREELANCER" && !isFreelancer) return fallback
   if (allow === "CLIENT" && isFreelancer) return fallback
+  if (allow === "NONE") return fallback // Force hidden
   return children
 }
   const defaultProfile = "/img/Profile default.png"
@@ -499,7 +500,7 @@ const Profile = () => {
       <div className="profile-hero">
         <div className="hero-background"></div>
         <div className="hero-content">
-           <RoleGuard allow="CLIENT">
+           <RoleGuard allow="NONE">
             <div className="profile-avatar">
               <img src={picture || defaultProfile} alt="profile" />
               <div className="avatar-badge">
@@ -564,7 +565,7 @@ const Profile = () => {
       )}
       <div className="profile-content">
         {/* Profile Settings Card */}
-        <RoleGuard allow="CLIENT">
+        <RoleGuard allow="NONE">
         <div className="settings-card">
           <div className="card-header">
             <h2>Profile Settings</h2>
