@@ -10,8 +10,8 @@ const About = () => {
     },
     {
       icon: <Zap size={24} />,
-      title: "Fast Delivery",
-      description: "Get quality work delivered on time, every time"
+      title: "On-Demand Support",
+      description: "Access high-quality tutoring and academic guidance exactly when you need it"
     },
     {
       icon: <Shield size={24} />,
@@ -21,7 +21,7 @@ const About = () => {
     {
       icon: <Award size={24} />,
       title: "Quality Guaranteed",
-      description: "All work is reviewed and meets our high standards"
+      description: "All tutors operate within high standards"
     }
   ];
 
@@ -29,25 +29,24 @@ const About = () => {
     {
       step: "1",
       title: "Choose Your Category",
-      description: "Browse through our categories and select the service you need"
+      description: "Browse through our collection and select the service you need"
     },
     {
       step: "2",
-      title: "Connect with Experts",
-      description: "Review expert profiles and start a conversation with your chosen professional"
+      title: "Connect with Tutors",
+      description: "Review expert profiles and start a conversation with your chosen tutor"
     },
     {
       step: "3",
-      title: "Get Quality Work",
-      description: "Receive your completed work on time and with guaranteed quality"
+      title: "Learn & Improve",
+      description: "Receive guided support that helps you understand concepts and strengthen your own work"
     }
   ];
 
   const stats = [
-    { icon: <Users size={32} />, value: "1000+", label: "Active Experts" },
-    { icon: <TrendingUp size={32} />, value: "10,000+", label: "Projects Completed" },
+    { icon: <Users size={32} />, value: "10+", label: "Active Tutors" },
     { icon: <MessageCircle size={32} />, value: "24/7", label: "Support Available" },
-    { icon: <Clock size={32} />, value: "2-48hrs", label: "Average Delivery" }
+    { icon: <Clock size={32} />, value: "1-3hrs", label: "Average response time" }
   ];
 
   return (
@@ -57,8 +56,8 @@ const About = () => {
         <div className="hero-content">
           <h1 className="hero-title">About RemyInk!</h1>
           <p className="hero-subtitle">
-            Your trusted academic services marketplace connecting students and professionals
-            with expert help for essays, tutoring, assignments, and more.
+            Your trusted academic support platform, connecting students and professionals
+            with expert help for tutoring, guidance, and support in achieving academic excellence
           </p>
         </div>
       </section>
@@ -69,14 +68,23 @@ const About = () => {
           <div className="mission-content">
             <h2 className="section-title">Our Mission</h2>
             <p className="mission-text">
-              RemyInk! was built to bridge the gap between those seeking academic assistance
-              and qualified experts ready to help. We believe in making quality academic support
-              accessible, affordable, and secure for everyone.
+              RemyInk! is an academic support platform designed to help students learn more effectively through expert guidance, tutoring, and structured feedback. We connect learners with qualified tutors who simplify complex topics, provide step-by-step explanations, and support academic progress across a wide range of subjects.
             </p>
+
             <p className="mission-text">
-              Our platform empowers students to achieve their academic goals while providing
-              professionals with opportunities to share their expertise and earn income doing
-              what they love.
+              Our focus is on genuine understanding rather than shortcuts — helping students build confidence, strengthen critical thinking, and develop long-term academic skills. Whether revising concepts, preparing for exams, or improving coursework, we provide personalized support tailored to each learner’s needs.
+            </p>
+
+            <p className="mission-text">
+              We are firmly committed to academic integrity. RemyInk! does not support contract cheating under any circumstances, and we strictly oppose any misuse of the platform for submitting work that is not the user’s own. Any users — whether students or tutors — found attempting such activity will be restricted or permanently removed.
+            </p>
+
+            <p className="mission-text">
+              Our platform is built to make academic support accessible, affordable, and secure, ensuring every student has the opportunity to learn, grow, and succeed responsibly.
+            </p>
+
+            <p className="mission-text">
+              We also empower tutors to share their expertise, mentor learners, and earn income by contributing meaningfully to education. This creates a collaborative environment where students receive guidance at their own pace, and tutors help bridge the gap between knowledge and understanding.
             </p>
           </div>
         </div>
@@ -142,7 +150,7 @@ const About = () => {
               <div className="value-content">
                 <h3 className="value-title">Quality First</h3>
                 <p className="value-description">
-                  We maintain the highest standards for all work delivered through our platform
+                  We maintain the highest standards for all services delivered through our platform
                 </p>
               </div>
             </div>
@@ -183,7 +191,7 @@ const About = () => {
           <div className="cta-content">
             <h2 className="cta-title">Ready to Get Started?</h2>
             <p className="cta-description">
-              Join thousands of students and professionals already using RemyInk!
+              Join many other students and professionals already using RemyInk!
             </p>
             <div className="cta-buttons">
               <a href="/categories" className="btn-primary">Browse Categories</a>
