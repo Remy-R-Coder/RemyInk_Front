@@ -118,15 +118,15 @@ const Home = () => {
             <section className="value-strip">
                 <div className="value-item">
                     <span className="value-icon">⭐</span>
-                    <p className="value-text">4.9/5.0 Average Rating</p>
+                    <p className="value-text">4.9-5.0 Average Rating</p>
                 </div>
                 <div className="value-item">
                     <span className="value-icon">⚡</span>
-                    <p className="value-text">Instant Access to Academic Support</p>
+                    <p className="value-text">Instant Access to Qualified Tutors</p>
                 </div>
                 <div className="value-item">
                     <span className="value-icon">🔒</span>
-                    <p className="value-text">Secure & Private Learning Support</p>
+                    <p className="value-text">Secure & Private Learning</p>
                 </div>
             </section>
 
