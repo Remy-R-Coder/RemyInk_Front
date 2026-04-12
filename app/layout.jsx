@@ -17,32 +17,32 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: {
-    default: 'RemyInk! - Academic Services Marketplace',
+    default: 'RemyInk! - Academic Support Marketplace',
     template: '%s | RemyInk!'
   },
-  description: 'Connect with expert freelancers for academic services, writing, research, and more. RemyInk! is your trusted platform for quality academic assistance.',
-  keywords: ['academic services', 'freelancers', 'writing', 'research', 'tutoring', 'marketplace'],
+  description: 'Connect with experts for tutoring, proofreading, editing and academic guidance. RemyInk! helps you learn, improve, and succeed.',
+  keywords: ['academic support', 'tutoring', 'proofreading', 'editing', 'study help', 'exam preparation', 'marketplace'],
   authors: [{ name: 'RemyInk!' }],
   creator: 'RemyInk!',
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://remyink.com',
-    title: 'RemyInk! - Academic Services Marketplace',
-    description: 'Connect with expert freelancers for academic services',
+    title: 'RemyInk! - Academic Support Marketplace',
+    description: 'Connect with experts for tutoring, editing, and academic guidance',
     siteName: 'RemyInk!',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'RemyInk! - Academic Services Marketplace',
-    description: 'Connect with expert freelancers for academic services',
+    title: 'RemyInk! - Academic Support Marketplace',
+    description: 'Connect with experts for tutoring, editing, and academic guidance',
   },
 };
 
 export default function RootLayout({
   children,
 }) {
-  return (
+  return ( 
     <html lang="en">
       <body className={`${geist.className} ${geistMono.variable} antialiased`} suppressHydrationWarning>
         <QueryProvider>

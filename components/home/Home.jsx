@@ -78,15 +78,15 @@ const Home = () => {
         <div className="home">
             <section className="hero">
                 <div className="hero-content"> 
-                    <span className="badge">Premium Academic Excellence</span>
+                    <span className="badge">Premium Academic Support</span>
                     <h1 className="brand">
-                        The Marketplace for <span className="highlight">Confident</span> Academic Results.
+                        <span className="highlight">Tutoring & Academic Support</span> Platform
                     </h1>
                     <p className="tagline">
-                        Premium academic services with 0% AI, No Plagiarism, and Excellent Language Use.
+                        Get help from vetted experts through tutoring, proofreading, referencing and academic guidance.  
                     </p>
                     <p className="description">
-                        Connect instantly with our exclusive network of vetted experts – no signup required, just pure academic excellence delivered on demand.
+                        We help you understand complex concepts and improve your academic skills with confidence, through live webinars, and tailored programs.
                     </p>
                     <div className="cta-buttons">
                         {/* 1. Show Dashboard for logged-in Freelancers */}
@@ -106,7 +106,7 @@ const Home = () => {
                                 }
                                 className="btn primary"
                             >
-                                Browse Categories →
+                                Find Help →
                             </Link>
                         )}
                         
@@ -118,15 +118,15 @@ const Home = () => {
             <section className="value-strip">
                 <div className="value-item">
                     <span className="value-icon">⭐</span>
-                    <p className="value-text">4.9/5.0 Average Expert Rating</p>
+                    <p className="value-text">4.9/5.0 Average Rating</p>
                 </div>
                 <div className="value-item">
                     <span className="value-icon">⚡</span>
-                    <p className="value-text">Instant Expert Matching</p>
+                    <p className="value-text">Instant Access to Academic Support</p>
                 </div>
                 <div className="value-item">
                     <span className="value-icon">🔒</span>
-                    <p className="value-text">100% Confidentiality</p>
+                    <p className="value-text">Secure & Private Learning Support</p>
                 </div>
             </section>
 
@@ -135,36 +135,36 @@ const Home = () => {
                 <div className="features-grid">
                     <div className="feature-card">
                         <span className="icon">📝</span>
-                        <h3>Zero AI Policy</h3>
-                        <p>Every piece is human-written and verified for originality, ensuring your academic integrity is preserved.</p>
+                        <h3>Personalized Learning Support</h3>
+                        <p>Receive personalized explanations and feedback designed to help you produce your own high-quality work.</p>
                     </div>
                     <div className="feature-card">
                         <span className="icon">🎓</span>
                         <h3>Vetted Specialists</h3>
-                        <p>Connect only with degree-holding professionals rigorously selected for subject mastery and reliable expertise.</p>
+                        <p>Work with qualified specialists selected for subject knowledge and teaching ability.</p>
                     </div>
                     <div className="feature-card">
                         <span className="icon">💬</span>
                         <h3>Direct Communication</h3>
-                        <p>Chat directly with your assigned expert 24/7 to monitor progress and guarantee precise results.</p>
+                        <p>Chat directly with experts to ask questions, review concepts, and get clarity in real time.</p>
                     </div>
                     <div className="feature-card">
                         <span className="icon">✅</span>
-                        <h3>Quality Guarantee</h3>
-                        <p>We stand by the quality of every service delivered.</p>
+                        <h3>Editing & Feedback</h3>
+                        <p>Improve your own work with professional proofreading and constructive feedback.</p>
                     </div>
                 </div>
             </section>
             
             <section className="client-testimonials">
-                <h2 className="section-title">Trusted by Students Globally</h2>
+                <h2 className="section-title">Trusted Globally</h2>
                 <div className="testimonial-grid">
                     <div className="testimonial-card">
-                        <p className="quote">“The results were impeccable, truly human-written and perfectly cited. A massive boost to my final grade!”</p>
+                        <p className="quote">“The guidance helped me understand my topic much better and improve my final submission.”</p>
                         <p className="author">— Alex P., Master's Student</p>
                     </div>
                     <div className="testimonial-card">
-                        <p className="quote">“My specialist understood the niche topic perfectly and delivered ahead of schedule. Unbeatable expertise.”</p>
+                        <p className="quote">“My tutor explained complex concepts clearly. I finally felt confident tackling my research.”</p>
                         <p className="author">— Dr. Fatima E., Researcher</p>
                     </div>
                     <div className="testimonial-card">
@@ -176,13 +176,14 @@ const Home = () => {
 
             <section className="final-cta">
                 <div className="cta-content">
-                    <h2>Ready to Achieve Confidence in Your Academics?</h2>
-                    <p>Unlock access to degree-holding specialists who guarantee zero AI and 100% original work.</p>
+                    <h2>Ready to Improve Your Academic Performance?</h2>
+                    <p>Get support from experts who help you learn, refine your work, and build confidence</p>
+                    <p>All services are intended for academic support, guidance, and skill development only, and not as replacement for your own work.</p>
                     <Link
                         href={guestSessionKey ? `/categories?session_key=${String(guestSessionKey)}` : "/categories"}
                         className="btn primary large-cta-btn"
                     >
-                        Start Your Task Now →
+                        Start Learning →
                     </Link>
                 </div>
             </section>

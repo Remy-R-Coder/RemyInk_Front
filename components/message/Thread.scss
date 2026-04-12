@@ -1,12 +1,13 @@
 .thread-shell {
-  width: 50%;
+  width: 100%; /* Changed from 80% to 100% */
+  max-width: 1440px; /* Keeps it contained on ultra-wide screens */
   min-height: auto;
   margin-inline: auto;
   height: auto;
   display: flex;
   justify-content: center;
   align-items: stretch;
-  padding: clamp(12px, 2vw, 24px) clamp(10px, 2vw, 28px) clamp(18px, 3vw, 34px);
+  padding: clamp(12px, 2vh, 24px) clamp(10px, 5%, 40px) clamp(18px, 4vh, 60px);
   background:
     radial-gradient(circle at 8% -12%, oklch(from #dc2626 l c h / 0.08), transparent 46%),
     radial-gradient(circle at 92% -8%, oklch(from #16a34a l c h / 0.06), transparent 42%);
@@ -23,13 +24,13 @@
   margin: 0;
   background: linear-gradient(
     180deg,
-    oklch(from #ffffff l c h / 0.96) 0%,
+    oklch(from #ffffff l c h / 0.96) 0%, 
     oklch(from #ffffff l c h / 0.9) 100%
   );
   border: 1px solid oklch(from #e2e8f0 l c h / 0.72);
   border-radius: 14px;
   box-shadow: 0 12px 28px rgba(2, 6, 23, 0.07);
-  overflow: hidden;
+  overflow: hidden;  
 }
 
 .thread-modern * {
@@ -279,7 +280,7 @@
 /* WhatsApp Style Bubbles with Theme Colors */
 .chat-bubble {
   border: none;
-  font-size: clamp(0.92rem, 0.2vw + 9.88rem, 1rem);
+  font-size: clamp(0.92rem, 0.2vw + 0.88rem, 1rem);
   line-height: 1.45;
   padding: 8px 14px;
   width: fit-content;
@@ -555,20 +556,32 @@
   }
 }
 
+
+/* 2. PHONE SIZE (Overrides for the tightest screens) */
 @media (max-width: 480px) {
+  .thread-shell {
+    /* Tight gutters for small screens */
+    padding: 10px 6px; 
+    background: #f1f1f4; 
+  }
+  
   .thread-modern,
   .thread-state {
-    min-height: 420px;
-    height: min(66vh, 560px);
-    border-radius: 10px;
+    /* Use 90% of the screen height so it feels like an app */
+    height: min(90vh, 700px); 
+    border-radius: 8px; 
+    max-width: 100%;
+    border: 1px solid #e2e8f0;
   }
 
   .thread-modern__header {
+    /* Added from the second option for better spacing */
     padding: 10px 12px;
   }
 
   .thread-message-content {
-    max-width: 94%;
+    /* Gives bubbles more width on narrow screens */
+    max-width: 94%; 
   }
 
   .thread-send-cta {

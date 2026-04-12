@@ -1111,7 +1111,7 @@ export default function Thread() {
         />
         
         {/* Only render the Send Offer button if the user is authenticated */}
-        {isAuthenticated && currentRole !== "CLIENT" && ( 
+        {isAuthenticated && (
             <button
                 type="button"
                 onClick={() => setShowOfferForm(!showOfferForm)}
