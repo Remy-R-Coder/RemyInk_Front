@@ -364,7 +364,7 @@ const Categories = () => {
           <div className="section-header">
             <h2 className="section-title">
               <span className="step-badge">Step 3</span>
-              Connect With Experts
+              Connect With Tutors
             </h2>
             <p className="section-description">Start a conversation with your chosen expert</p>
           </div>
@@ -372,7 +372,7 @@ const Categories = () => {
           {freelancers.length > 0 ? (
             <div className="freelancers-grid">
               {freelancers.map((freelancer) => (
-                <div key={freelancer.id} className="freelancer-card">
+                <div key={freelancer.id} className="freelancer-card"> 
                   <div className="freelancer-card-header">
                     <div className="freelancer-avatar">
                       <span>{freelancer.username.charAt(0).toUpperCase()}</span>
