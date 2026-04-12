@@ -298,9 +298,9 @@ export default function Thread() {
       const params = sessionKey ? { session_key: sessionKey } : {}
       return httpClient.get(`/chat/threads/${id}/messages/`, { params }).then((r) => r.data)
     },
-    enabled: !!id && sessionAvailable,
+    enabled: !!id && (isAuthenticated || sessionReady)
   })
-
+ 
   const { data: threadData } = useQuery({
     queryKey: ["threadDetail", id, sessionKey],
     queryFn: () => chatApi.getThread(id, sessionKey),
@@ -723,21 +723,34 @@ export default function Thread() {
     const files = Array.from(e.target.files).slice(0, MAX_PENDING_ATTACHMENTS - pendingAttachments.length)
     if (files.length === 0) return
 
-    for (const file of files) {
-      const clientId = Date.now().toString() + Math.random().toString(36).substring(2, 9)
 
-      setPendingAttachments(prev => [...prev, {
+    const uploads = files.map(file => {
+      const clientId =
+        Date.now().toString() + Math.random().toString(36).substring(2, 9)
+
+      return {
         id: clientId,
         name: file.name,
-        status: 'pending',
+        status: "pending",
         server_id: null,
         size_mb: file.size / (1024 * 1024),
-      }])
+        file,
+      }
+    })
+    setPendingAttachments(prev => [...prev, ...uploads])
 
-      await uploadMutation.mutateAsync({ file, clientId })
+    const uploadPromises = uploads.map((item) =>
+      uploadMutation.mutateAsync({
+        file: item.file,
+        clientId: item.id,
+      })
+    )
+
+    try {
+      await Promise.allSettled(uploadPromises)
+    } finally {
+      e.target.value = null
     }
-
-    e.target.value = null 
   }
 
   const handleRemoveAttachment = (clientId) => {
@@ -1111,7 +1124,7 @@ export default function Thread() {
         />
         
         {/* Only render the Send Offer button if the user is authenticated */}
-        {isAuthenticated && (
+        {isAuthenticated && currentRole !== "CLIENT" && ( 
             <button
                 type="button"
                 onClick={() => setShowOfferForm(!showOfferForm)}
