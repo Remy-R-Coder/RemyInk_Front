@@ -203,28 +203,26 @@ const chatApi = {
   initializeJobPayment: async (jobId, options = {}) => {
     const payload = {
       job_id: jobId,
+      gateway: (options.gateway || "PAYD").toUpperCase(),
     };
 
-    if (options.clientEmail) {
-      payload.client_email = options.clientEmail;
-    }
-    if (options.clientPassword) {
-      payload.client_password = options.clientPassword;
-    }
+    if (options.clientEmail) payload.client_email = options.clientEmail;
+    if (options.clientPassword) payload.client_password = options.clientPassword;
     if (options.clientPasswordConfirm) {
       payload.client_password_confirm = options.clientPasswordConfirm;
     }
 
-    const config = {};
-    if (options.sessionKey) {
-      config.params = { session_key: options.sessionKey };
-    }
+    const config = options.sessionKey
+      ? { params: { session_key: options.sessionKey } }
+      : {};
 
     const response = await httpClient.post(
-      "/orders/payments/paystack/initialize/",
+      "/orders/payments/payd/initiate/", // 🔥 IMPORTANT FIX BELOW
+
       payload,
       config
     );
+
     return response.data;
   },
 
