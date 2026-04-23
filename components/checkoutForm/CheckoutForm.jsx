@@ -1,104 +1,80 @@
 "use client"
 
-import React, { useEffect, useState } from "react";
-import {
-  PaymentElement,
-  LinkAuthenticationElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
+import React, { useState } from "react";
+import httpClient from "../../api/httpClient";
+import { CreditCard, ShieldCheck, Loader2 } from "lucide-react"; 
 
-const CheckoutForm = () => {
-  const stripe = useStripe();
-  const elements = useElements();
-
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState(null);
+const CheckoutForm = ({ jobId, amountUSD }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!stripe) {
-      return;
-    }
-
-    const clientSecret = new URLSearchParams(window.location.search).get(
-      "payment_intent_client_secret"
-    );
-
-    if (!clientSecret) {
-      return;
-    }
-
-    stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
-      switch (paymentIntent.status) {
-        case "succeeded":
-          setMessage("Payment succeeded!");
-          break;
-        case "processing":
-          setMessage("Your payment is processing.");
-          break;
-        case "requires_payment_method":
-          setMessage("Your payment was not successful, please try again.");
-          break;
-        default:
-          setMessage("Something went wrong.");
-          break;
-      }
-    });
-  }, [stripe]);
-
-  const handleSubmit = async (e) => {
+  const handleCardPayment = async (e) => {
     e.preventDefault();
-
-    if (!stripe || !elements) {
-      // Stripe.js has not yet loaded.
-      // Make sure to disable form submission until Stripe.js has loaded.
-      return;
-    }
-
     setIsLoading(true);
+    setError(null);
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        // Make sure to change this to your payment completion page
-        return_url: "http://localhost:5173/success",
-      },
-    });
+    try {
+      // 1. Initiate session - matches your urls.py exactly
+      const res = await httpClient.post("/payd/initiate/", {
+        job_id: jobId,
+      });
 
-    // This point will only be reached if there is an immediate error when
-    // confirming the payment. Otherwise, your customer will be redirected to
-    // your `return_url`. For some payment methods like iDEAL, your customer will
-    // be redirected to an intermediate site first to authorize the payment, then
-    // redirected to the `return_url`.
-    if (error.type === "card_error" || error.type === "validation_error") {
-      setMessage(error.message);
-    } else {
-      setMessage("An unexpected error occurred.");
+      // 2. IMPORTANT: Use 'checkout_url' to match your Django Response
+      if (res.data.checkout_url) {
+        window.location.href = res.data.checkout_url;
+      } else {
+        throw new Error("Could not generate payment link.");
+      }
+    } catch (err) {
+      console.error("Payment Error:", err);
+      // Try to get the specific error from Django (e.g., "Job not found")
+      const errMsg = err.response?.data?.error || "Unable to connect to the payment gateway.";
+      setError(errMsg);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
-  };
-
-  const paymentElementOptions = {
-    layout: "tabs",
   };
 
   return (
-    <form id="payment-form" onSubmit={handleSubmit}>
-      <LinkAuthenticationElement
-        id="link-authentication-element"
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <PaymentElement id="payment-element" options={paymentElementOptions} />
-      <button disabled={isLoading || !stripe || !elements} id="submit">
-        <span id="button-text">
-          {isLoading ? <div className="spinner" id="spinner"></div> : "Pay now"}
-        </span>
-      </button>
-      {/* Show any error or success messages */}
-      {message && <div id="payment-message">{message}</div>}
-    </form>
+    <div className="card-checkout-container">
+      <div className="payment-card shadow-lg border rounded-xl p-8 bg-white max-w-md mx-auto">
+        <h2 className="text-xl font-bold mb-2 text-gray-800">Secure Checkout</h2>
+        <p className="text-gray-500 mb-6 text-sm">
+          You are paying for Job #{jobId}
+        </p>
+
+        <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg mb-6">
+          <span className="text-gray-600">Total Amount:</span>
+          <span className="text-2xl font-bold text-blue-600">${amountUSD}</span>
+        </div>
+
+        <button
+          onClick={handleCardPayment}
+          disabled={isLoading}
+          className="w-full bg-black text-white py-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-all disabled:opacity-50"
+        >
+          {isLoading ? (
+            <Loader2 className="animate-spin" size={20} />
+          ) : (
+            <>
+              <CreditCard size={20} />
+              Pay with Card
+            </>
+          )}
+        </button>
+
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
+          <ShieldCheck size={14} />
+          <span>Secured by Payd. Encrypted Card Processing.</span>
+        </div>
+
+        {error && (
+          <p className="mt-4 text-red-500 text-center text-sm bg-red-50 p-2 rounded border border-red-100">
+            {error}
+          </p>
+        )}
+      </div>
+    </div>
   );
 };
 
