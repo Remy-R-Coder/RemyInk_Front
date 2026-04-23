@@ -218,7 +218,6 @@ const chatApi = {
 
     const response = await httpClient.post(
       "/payment/payd/initiate/",
-
       payload,
       config
     );
