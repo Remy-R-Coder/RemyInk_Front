@@ -200,10 +200,10 @@ const chatApi = {
     return response.data;
   },
 
+
   initializeJobPayment: async (jobId, options = {}) => {
     const payload = {
       job_id: jobId,
-      gateway: (options.gateway || "PAYD").toUpperCase(),
     };
 
     if (options.clientEmail) payload.client_email = options.clientEmail;
@@ -217,11 +217,11 @@ const chatApi = {
       : {};
 
     const response = await httpClient.post(
-      "/payments/payd/initiate/",
+      "/orders/payments/paystack/initialize/",
       payload,
       config
     );
-
+    
     return response.data;
   },
 
