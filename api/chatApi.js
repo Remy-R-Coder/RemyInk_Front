@@ -208,7 +208,7 @@ const chatApi = {
       throw new Error("STEP 3 FAILED: jobId is missing");
     }
     const payload = {
-      order_id: jobId, // Change "job_id" to "order_id"
+      job_id: jobId, // This is what your PaymentInitializeSerializer expects
     };
 
     if (options.clientEmail) payload.client_email = options.clientEmail;
