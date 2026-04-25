@@ -202,8 +202,13 @@ const chatApi = {
 
 
   initializeJobPayment: async (jobId, options = {}) => {
+    console.log("STEP 1 - jobId received:", jobId);
+    console.log("TYPE:", typeof jobId);
+    if (!jobId) {
+      throw new Error("STEP 3 FAILED: jobId is missing");
+    }
     const payload = {
-      job_id: jobId,
+      job_id: Number(jobId),
     };
 
     if (options.clientEmail) payload.client_email = options.clientEmail;
@@ -221,6 +226,8 @@ const chatApi = {
       payload,
       config
     );
+    console.log("STEP 4 - payload sent:", payload);
+    console.log("STEP 4 - response:", response.data);
     
     return response.data;
   },
