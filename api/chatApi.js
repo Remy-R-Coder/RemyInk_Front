@@ -217,7 +217,7 @@ const chatApi = {
       : {};
 
     const response = await httpClient.post(
-      "/orders/payments/paystack/initialize/",
+      "/payments/initialize/",
       payload,
       config
     );
