@@ -13,7 +13,6 @@ import "./OfferCard.scss"
 const PAYMENT_TRACKING_KEY = "pendingPaymentJobId"
 const CONFIRMED_PAID_JOBS_KEY = "confirmedPaidJobIds"
 const PAYMENT_SUCCESS_STATUSES = ["PAID", "ASSIGNED", "IN_PROGRESS", "DELIVERED", "CLIENT_COMPLETED"]
-const PAYMENT_PENDING_STATUSES = ["PROVISIONAL", "PENDING_PAYMENT"]
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_PASSWORD_LENGTH = 8
 
@@ -153,7 +152,6 @@ const OfferCard = ({ offer, onAccept, onReject, canRespond, isPending, isCreator
     try { await onReject(offer.id) } catch (error) {} finally { setResponding(false) }
   }
 
-  // --- REFACTORED PAYMENT FLOW ---
   const handlePayNowTrigger = () => {
     const jobId = offer?.created_job?.id
     if (!jobId) return alert("Missing job reference.")
@@ -175,7 +173,6 @@ const OfferCard = ({ offer, onAccept, onReject, canRespond, isPending, isCreator
     setIsInitializingPayment(true)
     setFormError("")
 
-    // FIX: Clear local state before starting a new payment attempt
     setIsLocallyConfirmedPaid(false)
     try {
       const raw = localStorage.getItem(CONFIRMED_PAID_JOBS_KEY)
@@ -187,18 +184,26 @@ const OfferCard = ({ offer, onAccept, onReject, canRespond, isPending, isCreator
 
     try {
       const paymentOptions = {
-        ...onboardingData,
+        ...onboardingData, // client_email, client_password, etc.
         sessionKey: localStorage.getItem("guestSessionKey"),
       }
 
       const paymentData = await chatApi.initializeJobPayment(jobId, paymentOptions)
-      if (paymentData.authorizationUrl) {
-        if (onboardingData.clientEmail) savePendingClientEmailForJob(jobId, onboardingData.clientEmail)
+      
+      // backend returns 'authorization_url'
+      const redirectUrl = paymentData.authorization_url || paymentData.authorizationUrl
+
+      if (redirectUrl) {
+        if (onboardingData.client_email) {
+            savePendingClientEmailForJob(jobId, onboardingData.client_email)
+        }
         localStorage.setItem(PAYMENT_TRACKING_KEY, String(jobId))
-        window.location.href = paymentData.authorizationUrl
+        window.location.href = redirectUrl
+      } else {
+        throw new Error("No payment link received.")
       }
     } catch (error) {
-      const detail = error.response?.data?.detail || "Failed to initialize payment."
+      const detail = error.response?.data?.error || error.response?.data?.detail || "Failed to initialize payment."
       setFormError(detail)
     } finally {
       setIsInitializingPayment(false)
@@ -211,10 +216,11 @@ const OfferCard = ({ offer, onAccept, onReject, canRespond, isPending, isCreator
     if (guestPassword.length < MIN_PASSWORD_LENGTH) return setFormError("Password must be 8+ characters.")
     if (guestPassword !== guestPasswordConfirm) return setFormError("Passwords do not match.")
 
+    // Sending snake_case keys to match Django Serializer
     processPayment({
-      clientEmail: guestEmail.trim().toLowerCase(),
-      clientPassword: guestPassword,
-      clientPasswordConfirm: guestPasswordConfirm,
+      client_email: guestEmail.trim().toLowerCase(),
+      client_password: guestPassword,
+      client_password_confirm: guestPasswordConfirm,
     })
   }
 
@@ -311,4 +317,4 @@ const OfferCard = ({ offer, onAccept, onReject, canRespond, isPending, isCreator
   )
 }
 
-export default OfferCard
+export default OfferCard 
