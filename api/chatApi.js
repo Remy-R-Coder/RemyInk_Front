@@ -208,7 +208,7 @@ const chatApi = {
       throw new Error("STEP 3 FAILED: jobId is missing");
     }
     const payload = {
-      job_id: Number(jobId),
+      order_id: jobId, // Change "job_id" to "order_id"
     };
 
     if (options.clientEmail) payload.client_email = options.clientEmail;
